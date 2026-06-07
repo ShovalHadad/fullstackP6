@@ -1,0 +1,491 @@
+/* איפוס בסיסי לכל האלמנטים */
+* {
+  box-sizing: border-box;
+}
+
+/* עיצוב כללי של כל האתר */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f8faff;
+  color: #081f5c;
+}
+
+/* ========================= */
+/* Login + Register */
+/* ========================= */
+
+/* רקע של עמודי התחברות והרשמה */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  background:
+    radial-gradient(circle at top left, rgba(245, 183, 0, 0.18), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(93, 95, 239, 0.22), transparent 35%),
+    linear-gradient(135deg, #f8faff, #eef2ff);
+}
+
+/* הכרטיס המרכזי של הטופס */
+.auth-card {
+  width: 430px;
+  background-color: white;
+  padding: 35px 40px;
+  border-radius: 28px;
+  box-shadow: 0 25px 70px rgba(8, 31, 92, 0.18);
+  text-align: center;
+}
+
+/* הלוגו בעמודי התחברות והרשמה */
+.auth-logo {
+  width: 190px;
+  margin-bottom: 10px;
+}
+
+/* כותרת הטופס */
+.auth-card h2 {
+  margin: 5px 0;
+  font-size: 30px;
+  color: #081f5c;
+}
+
+/* טקסט קטן מתחת לכותרת */
+.auth-subtitle {
+  margin: 0 0 25px;
+  color: #6b7280;
+}
+
+/* סידור הטופס */
+.auth-card form {
+  text-align: left;
+}
+
+/* כותרות השדות */
+.auth-card label {
+  display: block;
+  margin: 15px 0 6px;
+  font-weight: bold;
+  color: #081f5c;
+}
+
+/* שדות הקלט */
+.auth-card input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #d7ddf0;
+  border-radius: 14px;
+  font-size: 15px;
+  background-color: #f8faff;
+}
+
+/* כפתור ראשי בטופס */
+.auth-card button {
+  width: 100%;
+  margin-top: 25px;
+  padding: 14px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #081f5c, #5d5fef);
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* אפקט קטן לכפתור */
+.auth-card button:hover {
+  opacity: 0.92;
+}
+
+/* טקסט מעבר בין Login/Register */
+.auth-link {
+  margin-top: 22px;
+  color: #6b7280;
+}
+
+/* קישור מעבר בין Login/Register */
+.auth-link a {
+  color: #5d5fef;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* כרטיס הרשמה רחב יותר */
+.register-card {
+  width: 470px;
+  padding-top: 28px;
+}
+
+/* לוגו קטן יותר בהרשמה כדי שהטופס ייכנס */
+.register-card .auth-logo {
+  width: 145px;
+}
+
+/* כותרת הרשמה */
+.register-card h2 {
+  font-size: 28px;
+}
+
+/* ריווח קטן יותר בשדות הרשמה */
+.register-card label {
+  margin-top: 12px;
+}
+
+/* שדות הרשמה קצת נמוכים יותר */
+.register-card input {
+  padding: 11px;
+}
+
+/* כפתור הרשמה */
+.register-card button {
+  margin-top: 22px;
+}
+
+
+
+/* ========================= */
+/* Home Page */
+/* ========================= */
+
+/* עמוד הבית הראשי */
+.space-home-page {
+  min-height: 100vh;
+  display: flex;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 85% 25%, rgba(64, 90, 255, 0.45), transparent 18%),
+    radial-gradient(circle at 75% 85%, rgba(103, 58, 183, 0.35), transparent 25%),
+    radial-gradient(circle at 30% 20%, rgba(245, 183, 0, 0.12), transparent 18%),
+    linear-gradient(135deg, #020617, #07133d 45%, #12002f);
+}
+
+/* שכבת כוכבים עדינה */
+.space-home-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(white 1px, transparent 1px),
+    radial-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1px);
+  background-size: 90px 90px, 140px 140px;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+/* חלונית צד שמאל */
+.info-sidebar {
+  width: 300px;
+  min-height: 100vh;
+  padding: 28px 22px;
+  background: rgba(4, 12, 45, 0.72);
+  border-right: 1px solid rgba(93, 95, 239, 0.35);
+  backdrop-filter: blur(14px);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* אזור משתמש */
+.user-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+/* אייקון משתמש */
+.avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1d267d, #5d5fef);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  box-shadow: 0 0 30px rgba(93, 95, 239, 0.45);
+}
+
+/* שם המשתמש */
+.user-top h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+/* תחום לימודים */
+.user-top p {
+  margin: 5px 0 0;
+  color: #f5b700;
+  font-size: 14px;
+}
+
+/* כרטיס פרטים */
+.student-info-box {
+  border: 1px solid rgba(93, 95, 239, 0.45);
+  border-radius: 22px;
+  padding: 20px;
+  background: rgba(8, 31, 92, 0.35);
+}
+
+/* כותרת פרטים */
+.student-info-box h3 {
+  margin-top: 0;
+  margin-bottom: 22px;
+  font-size: 18px;
+}
+
+/* שורת מידע */
+.info-row {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+/* אייקון מידע */
+.info-row span {
+  font-size: 22px;
+}
+
+/* שם שדה */
+.info-row p {
+  margin: 0 0 5px;
+  color: #aeb7d8;
+  font-size: 14px;
+}
+
+/* ערך שדה */
+.info-row strong {
+  font-size: 15px;
+}
+
+/* כפתור התנתקות בתחתית */
+.sidebar-logout-btn {
+  margin-top: auto;
+  padding: 12px;
+  border: 1px solid #f5b700;
+  border-radius: 16px;
+  background: rgba(8, 31, 92, 0.45);
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* אפקט התנתקות */
+.sidebar-logout-btn:hover {
+  background: rgba(245, 183, 0, 0.16);
+}
+
+/* אזור מרכזי */
+.home-main {
+  flex: 1;
+  padding: 34px 25px 42px 60px;
+  position: relative;
+  z-index: 1;
+}
+
+/* החלק העליון של הדף */
+.top-section {
+  margin-bottom: 35px;
+  text-align: center;
+}
+
+/* שורת מותג: UniSpace במרכז ולוגו בצד ימין */
+.brand-header {
+  position: relative;
+  width: 100%;
+  min-height: 115px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* שם המערכת */
+.project-title {
+  margin: 0;
+  font-size: 82px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, #ffffff, #f5b700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* לוגו בצד ימין */
+.brand-logo {
+  position: absolute;
+
+  right: 0;
+
+  top: -20px;
+
+  width: 260px;
+
+  height: auto;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(0 0 22px rgba(245, 183, 0, 0.7))
+    drop-shadow(0 0 45px rgba(93, 95, 239, 0.6));
+}
+
+/* סלוגן */
+.project-slogan {
+  margin: 0;
+  color: #f5b700;
+  font-size: 22px;
+  letter-spacing: 3px;
+}
+
+/* אזור ברוכים הבאים */
+.welcome-section {
+  margin-top: 28px;
+}
+
+/* כותרת ברוכים הבאים */
+.welcome-section h2 {
+  font-size: 42px;
+  margin: 0 0 8px;
+  color: white;
+}
+
+/* טקסט מתחת לברוכים הבאים */
+.welcome-section p {
+  font-size: 20px;
+  color: #c6cbed;
+  margin: 0;
+}
+
+/* אזור כרטיסים */
+.home-actions {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 10px;
+}
+
+/* כרטיס פעולה */
+.space-card {
+  width: 330px;
+  min-height: 300px;
+  padding: 28px;
+  border-radius: 28px;
+  text-decoration: none;
+  color: white;
+  text-align: center;
+  background: rgba(10, 25, 80, 0.58);
+  border: 1px solid rgba(93, 95, 239, 0.55);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  transition: 0.3s;
+}
+
+/* אפקט לכרטיס */
+.space-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 70px rgba(93, 95, 239, 0.35);
+}
+
+/* עיגול אייקון */
+.card-circle {
+  width: 105px;
+  height: 105px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(93, 95, 239, 0.8), rgba(8, 31, 92, 0.3));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+}
+
+/* כותרת כרטיס */
+.space-card h2 {
+  font-size: 28px;
+  margin: 0 0 10px;
+}
+
+/* טקסט כרטיס */
+.space-card p {
+  color: #c6cbed;
+  font-size: 16px;
+  min-height: 42px;
+  margin: 0;
+}
+
+/* כפתור בתוך כרטיס */
+.space-card button {
+  margin-top: 18px;
+  padding: 12px 26px;
+  border-radius: 15px;
+  border: 1px solid rgba(245, 183, 0, 0.5);
+  background: linear-gradient(135deg, #2b1b7a, #5d5fef);
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* צבע מיוחד לכפתור Tasks */
+.tasks-card button {
+  background: linear-gradient(135deg, #003f88, #2563eb);
+}
+
+/* התאמה למסכים קטנים */
+@media (max-width: 950px) {
+  .space-home-page {
+    flex-direction: column;
+    overflow: auto;
+  }
+
+  .info-sidebar {
+    width: 100%;
+    min-height: auto;
+  }
+
+  .home-main {
+    padding: 25px;
+  }
+
+  .brand-header {
+    min-height: auto;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .brand-logo {
+    position: static;
+    width: 120px;
+  }
+
+  .project-title {
+    font-size: 48px;
+  }
+
+  .project-slogan {
+    font-size: 16px;
+  }
+
+  .welcome-section h2 {
+    font-size: 32px;
+  }
+
+  .welcome-section p {
+    font-size: 18px;
+  }
+
+  .home-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .space-card {
+    width: 100%;
+    max-width: 360px;
+  }
+}
