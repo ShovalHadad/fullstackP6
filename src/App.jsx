@@ -1,11 +1,25 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Login from './pages/Login.jsx';
-import Register from './pages/Register.jsx';
-import Home from './pages/Home.jsx';
-import Tasks from './pages/Tasks.jsx';
-import Questions from './pages/Questions.jsx';
-import QuestionDetails from './pages/QuestionDetails.jsx';
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import Home from "./pages/Home.jsx";
+import Tasks from "./pages/Tasks.jsx";
+import Questions from "./pages/Questions.jsx";
+import QuestionDetails from "./pages/QuestionDetails.jsx";
+
+// רכיב קטן שבודק אם המשתמש מחובר
+function ProtectedRoute({ children }) {
+  // בודקים אם יש משתמש מחובר ב-localStorage
+  const currentUser = localStorage.getItem("currentUser");
+
+  // אם אין משתמש מחובר, מחזירים לעמוד התחברות
+  if (!currentUser) {
+    return <Navigate to="/login" />;
+  }
+
+  // אם המשתמש מחובר, מציגים את העמוד
+  return children;
+}
 
 function App() {
   return (
@@ -20,10 +34,41 @@ function App() {
         <Route path="/register" element={<Register />} />
 
         {/* דפי המערכת אחרי התחברות */}
-        <Route path="/home" element={<Home />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/questions" element={<Questions />} />
-        <Route path="/questions/:id" element={<QuestionDetails />} />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <Tasks />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/questions"
+          element={
+            <ProtectedRoute>
+              <Questions />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/questions/:id"
+          element={
+            <ProtectedRoute>
+              <QuestionDetails />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

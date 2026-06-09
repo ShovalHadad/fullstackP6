@@ -1,7 +1,25 @@
-import { Link } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 function Home() {
+  // מאפשר מעבר לעמוד login אחרי logout
+  const navigate = useNavigate();
+
+  // שליפת המשתמש המחובר מה-localStorage
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+  // אם אין משתמש מחובר, מחזירים להתחברות
+  if (!currentUser) {
+    navigate("/login");
+    return null;
+  }
+
+  // התנתקות מהמערכת
+  const handleLogout = () => {
+    localStorage.removeItem("currentUser");
+    navigate("/login");
+  };
+
   return (
     <div className="space-home-page">
       {/* חלונית צד שמאל עם פרטי הסטודנט */}
@@ -11,8 +29,9 @@ function Home() {
           <div className="avatar">👤</div>
 
           <div>
-            <h2>Shira</h2>
-            <p>Software Engineering</p>
+            {/* במקום שם קבוע, מציגים את שם המשתמש המחובר */}
+            <h2>{currentUser.fullName}</h2>
+            <p>{currentUser.department}</p>
           </div>
         </div>
 
@@ -24,7 +43,7 @@ function Home() {
             <span>👤</span>
             <div>
               <p>Username</p>
-              <strong>SHIRA</strong>
+              <strong>{currentUser.username}</strong>
             </div>
           </div>
 
@@ -32,7 +51,7 @@ function Home() {
             <span>✉️</span>
             <div>
               <p>Email</p>
-              <strong>shira@example.com</strong>
+              <strong>{currentUser.email}</strong>
             </div>
           </div>
 
@@ -40,7 +59,7 @@ function Home() {
             <span>🎓</span>
             <div>
               <p>Department</p>
-              <strong>Software Engineering</strong>
+              <strong>{currentUser.department}</strong>
             </div>
           </div>
 
@@ -48,13 +67,13 @@ function Home() {
             <span>📅</span>
             <div>
               <p>Year</p>
-              <strong>1</strong>
+              <strong>{currentUser.studyYear}</strong>
             </div>
           </div>
         </div>
 
         {/* כפתור התנתקות בתחתית החלונית */}
-        <button className="sidebar-logout-btn">
+        <button className="sidebar-logout-btn" onClick={handleLogout}>
           Logout
         </button>
       </aside>
@@ -84,7 +103,7 @@ function Home() {
 
           {/* הודעת ברוכים הבאים */}
           <section className="welcome-section">
-            <h2>Welcome Back, Shira 👋</h2>
+            <h2>Welcome Back, {currentUser.fullName} 👋</h2>
             <p>What would you like to do today?</p>
           </section>
         </div>
