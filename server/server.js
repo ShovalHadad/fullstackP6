@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const todoRoutes = require("./routes/todoRoutes");
 const postRoutes = require("./routes/postRoutes");
+const commentRoutes = require("./routes/commentRoutes");
 
 const app = express();
 
@@ -20,7 +21,7 @@ app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/todos", todoRoutes);
 app.use("/posts", postRoutes);
-
+app.use("/comments", commentRoutes);
 
 app.get("/", (req, res) => {
   res.json({
