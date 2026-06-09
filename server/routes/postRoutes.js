@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const Post = require("../models/Post");
+const Comment = require("../models/Comment");
 
 const router = express.Router();
 
@@ -195,9 +196,6 @@ DELETE /posts/:id?userId=...
 משתמש יכול למחוק רק את הפוסט שלו.
 Deletes a post/question.
 User can delete only his own post.
-
-Later comments of this post will also need to be deleted.
-We will improve this after creating Comment model routes.
 */
 router.delete("/:id", async (req, res) => {
   try {
@@ -226,6 +224,8 @@ router.delete("/:id", async (req, res) => {
         message: "Post not found or not yours"
       });
     }
+
+    await Comment.deleteMany({ postId: id });
 
     res.json({
       message: "Post deleted successfully",
