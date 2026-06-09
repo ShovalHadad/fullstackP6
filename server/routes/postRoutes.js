@@ -225,11 +225,12 @@ router.delete("/:id", async (req, res) => {
       });
     }
 
-    await Comment.deleteMany({ postId: id });
+    const deletedCommentsResult = await Comment.deleteMany({ postId: id });
 
     res.json({
-      message: "Post deleted successfully",
-      deletedPost
+        message: "Post and its comments deleted successfully",
+        deletedPost,
+        deletedCommentsCount: deletedCommentsResult.deletedCount
     });
   } catch (error) {
     console.error("Delete post error:", error.message);
