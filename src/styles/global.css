@@ -498,3 +498,438 @@ body {
   text-align: center;
   font-weight: 600;
 }
+
+
+
+/* ========================= */
+/* Tasks Page */
+/* ========================= */
+
+/* רקע עמוד המשימות */
+.tasks-page {
+  min-height: 100vh;
+  padding: 35px;
+  color: white;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(64, 90, 255, 0.35), transparent 20%),
+    radial-gradient(circle at 30% 80%, rgba(103, 58, 183, 0.35), transparent 25%),
+    linear-gradient(135deg, #020617, #07133d 45%, #12002f);
+}
+
+/* קונטיינר מרכזי */
+.tasks-container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+/* החלק העליון */
+.tasks-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+/* כותרת העמוד */
+.tasks-top h1 {
+  font-size: 45px;
+  margin: 0;
+}
+
+/* טקסט מתחת לכותרת */
+.tasks-top p {
+  color: #c6cbed;
+  font-size: 18px;
+}
+
+/* קישור חזרה לבית */
+.back-home-link {
+  color: white;
+  text-decoration: none;
+  border: 1px solid #f5b700;
+  border-radius: 14px;
+  padding: 10px 18px;
+}
+
+/* טופס הוספת משימה */
+.task-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 180px 140px;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+/* שדות בטופס ובסינון */
+.task-form input,
+.task-filters input {
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(93, 95, 239, 0.5);
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 15px;
+}
+
+/* כפתורי טופס וסינון */
+.task-form button,
+.task-filters button {
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #081f5c, #5d5fef);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* אזור סינון */
+.task-filters {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 25px;
+}
+
+/* כפתור סינון */
+.task-filters button {
+  padding: 0 28px;
+}
+
+/* רשימת משימות */
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* כרטיס משימה */
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px;
+  border-radius: 22px;
+  background: rgba(10, 25, 80, 0.65);
+  border: 1px solid rgba(93, 95, 239, 0.5);
+}
+
+/* checkbox */
+.task-item input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+}
+
+/* תוכן המשימה */
+.task-content {
+  flex: 1;
+}
+
+/* כותרת משימה */
+.task-content h3 {
+  margin: 0 0 6px;
+}
+
+/* תיאור משימה */
+.task-content p {
+  margin: 0 0 8px;
+  color: #c6cbed;
+}
+
+/* תאריך יעד */
+.task-content span {
+  color: #f5b700;
+  font-size: 14px;
+}
+
+/* משימה שבוצעה */
+.done-task {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+/* כפתור מחיקה */
+.delete-task-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(255, 80, 80, 0.18);
+  color: #ffb4b4;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* הודעת טעינה או רשימה ריקה */
+.tasks-loading,
+.empty-message {
+  color: #c6cbed;
+  font-size: 18px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+/* התאמה למסכים קטנים */
+@media (max-width: 900px) {
+  .task-form {
+    grid-template-columns: 1fr;
+  }
+
+  .task-filters {
+    flex-direction: column;
+  }
+
+  .tasks-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+}
+
+/* מספר משימה ידידותי */
+.task-number {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: #f5b700;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+
+/* ========================= */
+/* Questions + Comments */
+/* ========================= */
+
+.questions-page {
+  min-height: 100vh;
+  padding: 35px;
+  color: white;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(64, 90, 255, 0.35), transparent 20%),
+    radial-gradient(circle at 30% 80%, rgba(103, 58, 183, 0.35), transparent 25%),
+    linear-gradient(135deg, #020617, #07133d 45%, #12002f);
+}
+
+.questions-container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+.questions-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.questions-top h1 {
+  font-size: 45px;
+  margin: 0;
+}
+
+.questions-top p {
+  color: #c6cbed;
+  font-size: 18px;
+}
+
+.question-form {
+  display: grid;
+  grid-template-columns: 1fr 250px 160px;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.question-form textarea {
+  grid-column: 1 / 3;
+  min-height: 95px;
+  resize: vertical;
+}
+
+.question-form input,
+.question-form textarea,
+.questions-filter input,
+.comment-form textarea {
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(93, 95, 239, 0.5);
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 15px;
+  font-family: Arial, sans-serif;
+}
+
+.question-form button,
+.questions-filter button,
+.open-question-btn,
+.comment-form button {
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #081f5c, #5d5fef);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 12px 24px;
+  text-align: center;
+}
+
+.questions-filter {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 25px;
+}
+
+.questions-list,
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.question-item,
+.question-details-card,
+.comment-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px;
+  border-radius: 22px;
+  background: rgba(10, 25, 80, 0.65);
+  border: 1px solid rgba(93, 95, 239, 0.5);
+}
+
+.question-content {
+  flex: 1;
+}
+
+.question-content h3,
+.question-details-card h2 {
+  margin: 0 0 8px;
+  font-size: 23px;
+}
+
+.question-course {
+  color: #f5b700;
+  font-weight: bold;
+}
+
+.question-author {
+  color: #aeb7d8;
+  font-size: 14px;
+}
+
+.question-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+}
+
+.comment-form {
+  display: flex;
+  gap: 14px;
+  margin: 25px 0;
+}
+
+.comment-form textarea {
+  flex: 1;
+  min-height: 80px;
+  resize: vertical;
+}
+
+.comments-title {
+  margin-top: 25px;
+}
+
+@media (max-width: 900px) {
+  .question-form {
+    grid-template-columns: 1fr;
+  }
+
+  .question-form textarea {
+    grid-column: auto;
+  }
+
+  .questions-top,
+  .question-item,
+  .comment-item,
+  .comment-form {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .questions-filter {
+    flex-direction: column;
+  }
+}
+
+/* תיבת עריכת שאלה */
+.edit-post-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* שדות עריכה */
+.edit-post-box input,
+.edit-post-box textarea {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(93, 95, 239, 0.5);
+  font-family: Arial, sans-serif;
+}
+
+/* אזור כפתורי עריכה */
+.edit-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* כפתור עריכה */
+.edit-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(245, 183, 0, 0.18);
+  color: #f5b700;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* תוכן תגובה */
+.comment-content {
+  flex: 1;
+}
+
+
+/* אזור כפתורים של משימה */
+.task-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* תיבת עריכת משימה */
+.edit-task-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* שדות עריכת משימה */
+.edit-task-box input {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(93, 95, 239, 0.5);
+  font-family: Arial, sans-serif;
+}
+
+/* אזור כפתורי עריכה */
+.edit-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* כפתור עריכה */
+.edit-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(245, 183, 0, 0.18);
+  color: #f5b700;
+  font-weight: bold;
+  cursor: pointer;
+}
