@@ -6,7 +6,7 @@ function QuestionDetails() {
   // id של השאלה מתוך הכתובת
   const { id } = useParams();
 
-  // המשתמש המחובר
+  // המשתמש המחובר מתוך localStorage
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
   // id של המשתמש המחובר
@@ -19,29 +19,29 @@ function QuestionDetails() {
   // השאלה הנוכחית
   const [post, setPost] = useState(null);
 
-  // רשימת תגובות
+  // רשימת התגובות
   const [comments, setComments] = useState([]);
 
   // תגובה חדשה
   const [newComment, setNewComment] = useState("");
 
-  // שמירת התגובה שנמצאת כרגע בעריכה
+  // התגובה שנמצאת כרגע בעריכה
   const [editingCommentId, setEditingCommentId] = useState(null);
 
   // הטקסט של התגובה בזמן עריכה
   const [editCommentBody, setEditCommentBody] = useState("");
 
-  // הודעות
+  // הודעות מצב
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // טעינה בכניסה לעמוד
+  // טעינת השאלה והתגובות בכניסה לעמוד
   useEffect(() => {
     fetchPost();
     fetchComments();
   }, [id]);
 
-  // הבאת פרטי השאלה
+  // הבאת פרטי השאלה מהשרת
   const fetchPost = async () => {
     try {
       setError("");
@@ -61,7 +61,7 @@ function QuestionDetails() {
     }
   };
 
-  // הבאת תגובות של השאלה
+  // הבאת התגובות של השאלה מהשרת
   const fetchComments = async () => {
     try {
       setLoading(true);
@@ -88,7 +88,7 @@ function QuestionDetails() {
   const addComment = async (event) => {
     event.preventDefault();
 
-    // לא מאפשרים תגובה ריקה
+    // לא מאפשרים להוסיף תגובה ריקה
     if (!newComment.trim()) {
       setError("Comment body is required");
       return;
@@ -116,9 +116,11 @@ function QuestionDetails() {
         return;
       }
 
-      // ניקוי השדה וטעינה מחדש
+      // ניקוי השדה אחרי הוספה
       setNewComment("");
-      fetchComments();
+
+      // צמצום פניות: מוסיפים את התגובה החדשה ל-state בלי GET נוסף
+      setComments([...comments, data]);
     } catch (err) {
       console.error("Add comment error:", err);
       setError("Cannot connect to server");
@@ -174,9 +176,21 @@ function QuestionDetails() {
         return;
       }
 
-      // סיום מצב עריכה וטעינת תגובות מחדש
+      // צמצום פניות: מעדכנים את התגובה ב-state בלי GET נוסף
+      setComments(
+        comments.map((comment) => {
+          const currentId = comment._id || comment.id;
+
+          if (currentId === commentId) {
+            return data;
+          }
+
+          return comment;
+        })
+      );
+
+      // יציאה ממצב עריכה
       cancelEditComment();
-      fetchComments();
     } catch (err) {
       console.error("Update comment error:", err);
       setError("Cannot connect to server");
@@ -199,7 +213,13 @@ function QuestionDetails() {
         return;
       }
 
-      fetchComments();
+      // צמצום פניות: מסירים את התגובה מה-state בלי GET נוסף
+      setComments(
+        comments.filter((comment) => {
+          const currentId = comment._id || comment.id;
+          return currentId !== commentId;
+        })
+      );
     } catch (err) {
       console.error("Delete comment error:", err);
       setError("Cannot connect to server");

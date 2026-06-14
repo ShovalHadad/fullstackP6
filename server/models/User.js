@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema(
     studyYear: {
       type: Number,
       default: 1
+    },
+
+    // האם המשתמש חסום במערכת
+    isBlocked: {
+      type: Boolean,
+      default: false
     }
   },
   {

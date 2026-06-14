@@ -130,6 +130,13 @@ router.post("/login", async (req, res) => {
       });
     }
 
+        // בדיקה אם המשתמש חסום
+    if (user.isBlocked) {
+      return res.status(403).json({
+        message: "User is blocked"
+      });
+    }
+
     // חיפוש רשומת הסיסמה לפי ה-id של המשתמש
     const userPassword = await UserPassword.findOne({
       userId: user._id

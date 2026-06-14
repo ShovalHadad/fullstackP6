@@ -72,6 +72,11 @@ function Home() {
           </div>
         </div>
 
+        {/* מעבר לעמוד שינוי פרטים */}
+        <Link to="/profile" className="sidebar-profile-btn">
+        Edit Profile
+        </Link>
+
         {/* כפתור התנתקות בתחתית החלונית */}
         <button className="sidebar-logout-btn" onClick={handleLogout}>
           Logout

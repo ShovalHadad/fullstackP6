@@ -6,6 +6,7 @@ import Home from "./pages/Home.jsx";
 import Tasks from "./pages/Tasks.jsx";
 import Questions from "./pages/Questions.jsx";
 import QuestionDetails from "./pages/QuestionDetails.jsx";
+import Profile from "./pages/Profile.jsx";
 
 // רכיב קטן שבודק אם המשתמש מחובר
 function ProtectedRoute({ children }) {
@@ -66,6 +67,15 @@ function App() {
           element={
             <ProtectedRoute>
               <QuestionDetails />
+            </ProtectedRoute>
+          }
+        />
+
+                <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

@@ -1,15 +1,12 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
+
 const User = require("../models/User");
+const UserPassword = require("../models/UserPassword");
 
 const router = express.Router();
 
-/*
-GET /users/:id
-
-Returns user details by id.
-Does not return password because passwords are stored separately
-in UserPassword collection.
-*/
+// מחזיר פרטי משתמש לפי id
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -29,6 +26,7 @@ router.get("/:id", async (req, res) => {
       email: user.email,
       department: user.department,
       studyYear: user.studyYear,
+      isBlocked: user.isBlocked,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
     });
@@ -37,6 +35,156 @@ router.get("/:id", async (req, res) => {
 
     res.status(500).json({
       message: "Server error while getting user"
+    });
+  }
+});
+
+// עדכון פרטי משתמש
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fullName, email, department, studyYear } = req.body;
+
+    if (!fullName || !email) {
+      return res.status(400).json({
+        message: "Full name and email are required"
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedDepartment = department ? department.trim().toLowerCase() : "";
+
+    // בדיקה שאין משתמש אחר עם אותו אימייל
+    const existingUser = await User.findOne({
+      email: normalizedEmail,
+      _id: { $ne: id }
+    });
+
+    if (existingUser) {
+      return res.status(409).json({
+        message: "Email already exists"
+      });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        fullName,
+        email: normalizedEmail,
+        department: normalizedDepartment,
+        studyYear
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    res.json({
+      _id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      department: updatedUser.department,
+      studyYear: updatedUser.studyYear,
+      isBlocked: updatedUser.isBlocked
+    });
+  } catch (error) {
+    console.error("Update user error:", error.message);
+
+    res.status(500).json({
+      message: "Server error while updating user"
+    });
+  }
+});
+
+// שינוי סיסמה
+router.put("/:id/password", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Current password and new password are required"
+      });
+    }
+
+    const userPassword = await UserPassword.findOne({
+      userId: id
+    });
+
+    if (!userPassword) {
+      return res.status(404).json({
+        message: "Password record not found"
+      });
+    }
+
+    // בדיקה שהסיסמה הנוכחית נכונה
+    const isPasswordCorrect = await bcrypt.compare(
+      currentPassword,
+      userPassword.passwordHash
+    );
+
+    if (!isPasswordCorrect) {
+      return res.status(401).json({
+        message: "Current password is incorrect"
+      });
+    }
+
+    // הצפנת הסיסמה החדשה
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+    userPassword.passwordHash = newPasswordHash;
+    await userPassword.save();
+
+    res.json({
+      message: "Password changed successfully"
+    });
+  } catch (error) {
+    console.error("Change password error:", error.message);
+
+    res.status(500).json({
+      message: "Server error while changing password"
+    });
+  }
+});
+
+// חסימה או ביטול חסימה של משתמש
+router.put("/:id/block", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isBlocked } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { isBlocked },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    res.json({
+      _id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      department: updatedUser.department,
+      studyYear: updatedUser.studyYear,
+      isBlocked: updatedUser.isBlocked
+    });
+  } catch (error) {
+    console.error("Block user error:", error.message);
+
+    res.status(500).json({
+      message: "Server error while blocking user"
     });
   }
 });

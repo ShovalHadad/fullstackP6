@@ -6,7 +6,7 @@ function Tasks() {
   // המשתמש המחובר מתוך localStorage
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-  // שליפה בטוחה של ה-id כי לפעמים השרת מחזיר user בתוך אובייקט
+  // שליפה בטוחה של ה-id של המשתמש
   const userId =
     currentUser?.user?._id ||
     currentUser?.user?.id ||
@@ -23,10 +23,10 @@ function Tasks() {
     dueDate: ""
   });
 
-  // שמירת המשימה שנמצאת כרגע בעריכה
+  // המשימה שנמצאת כרגע בעריכה
   const [editingTaskId, setEditingTaskId] = useState(null);
 
-  // הנתונים של המשימה בזמן עריכה
+  // נתוני המשימה בזמן עריכה
   const [editTaskData, setEditTaskData] = useState({
     title: "",
     description: "",
@@ -42,6 +42,9 @@ function Tasks() {
     fromDate: "",
     toDate: ""
   });
+
+  // סינון לפי מצב ביצוע
+  const [completedFilter, setCompletedFilter] = useState("all");
 
   // טעינת המשימות כשהעמוד נפתח
   useEffect(() => {
@@ -61,13 +64,24 @@ function Tasks() {
 
       let url = `${API_URL}/todos?userId=${userId}`;
 
-      // אם יש סינון לפי תאריך - מוסיפים לכתובת
+      // סינון לפי תאריך התחלה
       if (filters.fromDate) {
         url += `&fromDate=${filters.fromDate}`;
       }
 
+      // סינון לפי תאריך סיום
       if (filters.toDate) {
         url += `&toDate=${filters.toDate}`;
+      }
+
+      // סינון לפי משימות שבוצעו
+      if (completedFilter === "completed") {
+        url += "&completed=true";
+      }
+
+      // סינון לפי משימות שלא בוצעו
+      if (completedFilter === "notCompleted") {
+        url += "&completed=false";
       }
 
       const response = await fetch(url);
@@ -78,7 +92,7 @@ function Tasks() {
         return;
       }
 
-      // מיון לפי id כמו שכתוב בדרישות
+      // מיון לפי id
       const sortedTasks = data.sort((a, b) => {
         const firstId = a.id || a._id;
         const secondId = b.id || b._id;
@@ -95,7 +109,7 @@ function Tasks() {
     }
   };
 
-  // עדכון השדות של משימה חדשה
+  // עדכון שדות משימה חדשה
   const handleTaskChange = (event) => {
     const { name, value } = event.target;
 
@@ -140,7 +154,7 @@ function Tasks() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          userId: userId,
+          userId,
           title: newTask.title,
           description: newTask.description,
           dueDate: newTask.dueDate,
@@ -155,15 +169,15 @@ function Tasks() {
         return;
       }
 
-      // ניקוי הטופס אחרי הוספה
+      // ניקוי הטופס
       setNewTask({
         title: "",
         description: "",
         dueDate: ""
       });
 
-      // טעינה מחדש של המשימות
-      fetchTasks();
+      // צמצום פניות: מוסיפים את המשימה החדשה ל-state בלי GET נוסף
+      setTasks([...tasks, data]);
     } catch (err) {
       console.error("Add task error:", err);
       setError("Cannot connect to server");
@@ -185,7 +199,7 @@ function Tasks() {
         body: JSON.stringify({
           ...task,
           completed: !task.completed,
-          userId: userId
+          userId
         })
       });
 
@@ -196,7 +210,12 @@ function Tasks() {
         return;
       }
 
-      fetchTasks();
+      // צמצום פניות: מעדכנים את המשימה ברשימה בלי GET נוסף
+      setTasks(
+        tasks.map((item) =>
+          (item._id || item.id) === taskId ? data : item
+        )
+      );
     } catch (err) {
       console.error("Update task error:", err);
       setError("Cannot connect to server");
@@ -262,7 +281,7 @@ function Tasks() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          userId: userId,
+          userId,
           title: editTaskData.title,
           description: editTaskData.description,
           dueDate: editTaskData.dueDate,
@@ -277,8 +296,14 @@ function Tasks() {
         return;
       }
 
+      // צמצום פניות: מעדכנים את המשימה הערוכה ברשימה בלי GET נוסף
+      setTasks(
+        tasks.map((item) =>
+          (item._id || item.id) === taskId ? data : item
+        )
+      );
+
       cancelEditTask();
-      fetchTasks();
     } catch (err) {
       console.error("Edit task error:", err);
       setError("Cannot connect to server");
@@ -301,7 +326,10 @@ function Tasks() {
         return;
       }
 
-      fetchTasks();
+      // צמצום פניות: מסירים את המשימה מה-state בלי GET נוסף
+      setTasks(
+        tasks.filter((item) => (item._id || item.id) !== taskId)
+      );
     } catch (err) {
       console.error("Delete task error:", err);
       setError("Cannot connect to server");
@@ -352,7 +380,7 @@ function Tasks() {
           <button type="submit">Add Task</button>
         </form>
 
-        {/* סינון לפי תאריך */}
+        {/* סינון משימות */}
         <div className="task-filters">
           <input
             type="date"
@@ -367,6 +395,15 @@ function Tasks() {
             value={filters.toDate}
             onChange={handleFilterChange}
           />
+
+          <select
+            value={completedFilter}
+            onChange={(e) => setCompletedFilter(e.target.value)}
+          >
+            <option value="all">All Tasks</option>
+            <option value="completed">Completed</option>
+            <option value="notCompleted">Not Completed</option>
+          </select>
 
           <button onClick={fetchTasks}>Filter</button>
         </div>

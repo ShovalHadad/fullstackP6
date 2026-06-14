@@ -933,3 +933,139 @@ body {
   font-weight: bold;
   cursor: pointer;
 }
+
+/* עיצוב בחירת סטטוס משימות */
+.task-filters select {
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(93, 95, 239, 0.5);
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 15px;
+}
+
+
+/* ========================= */
+/* Profile Page */
+/* ========================= */
+
+/* רקע עמוד פרופיל */
+.profile-page {
+  min-height: 100vh;
+  padding: 35px;
+  color: white;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(64, 90, 255, 0.35), transparent 20%),
+    radial-gradient(circle at 30% 80%, rgba(103, 58, 183, 0.35), transparent 25%),
+    linear-gradient(135deg, #020617, #07133d 45%, #12002f);
+}
+
+/* קונטיינר מרכזי */
+.profile-container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+/* חלק עליון בעמוד */
+.profile-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+/* כותרת עמוד פרופיל */
+.profile-top h1 {
+  font-size: 45px;
+  margin: 0;
+}
+
+/* טקסט מתחת לכותרת */
+.profile-top p {
+  color: #c6cbed;
+  font-size: 18px;
+}
+
+/* שני הכרטיסים של הפרופיל */
+.profile-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+/* כרטיס טופס */
+.profile-card {
+  padding: 28px;
+  border-radius: 24px;
+  background: rgba(10, 25, 80, 0.65);
+  border: 1px solid rgba(93, 95, 239, 0.5);
+}
+
+/* כותרת כרטיס */
+.profile-card h2 {
+  margin-top: 0;
+}
+
+/* תוויות בשדות */
+.profile-card label {
+  display: block;
+  margin: 14px 0 6px;
+  color: #c6cbed;
+  font-weight: bold;
+}
+
+/* שדות קלט */
+.profile-card input {
+  width: 100%;
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(93, 95, 239, 0.5);
+  font-size: 15px;
+}
+
+/* כפתור שמירה */
+.profile-card button {
+  width: 100%;
+  margin-top: 22px;
+  padding: 13px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #081f5c, #5d5fef);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* הודעת הצלחה */
+.success-message {
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(34, 197, 94, 0.18);
+  color: #86efac;
+  font-weight: bold;
+}
+
+/* כפתור פרופיל בחלונית */
+.sidebar-profile-btn {
+  margin-top: 20px;
+  padding: 12px;
+  border: 1px solid rgba(245, 183, 0, 0.6);
+  border-radius: 16px;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  font-weight: bold;
+  background: rgba(245, 183, 0, 0.12);
+}
+
+/* התאמה למסכים קטנים */
+@media (max-width: 900px) {
+  .profile-sections {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+}

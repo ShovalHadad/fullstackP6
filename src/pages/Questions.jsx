@@ -3,44 +3,44 @@ import { Link } from "react-router-dom";
 import API_URL from "../services/api";
 
 function Questions() {
-  // המשתמש המחובר
+  // המשתמש המחובר מתוך localStorage
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-  // שליפת id של המשתמש
+  // שליפת id של המשתמש המחובר
   const userId =
     currentUser?.user?._id ||
     currentUser?.user?.id ||
     currentUser?._id ||
     currentUser?.id;
 
-  // רשימת שאלות
+  // רשימת השאלות
   const [posts, setPosts] = useState([]);
 
-  // שאלה חדשה
+  // נתוני שאלה חדשה
   const [newPost, setNewPost] = useState({
     title: "",
     body: "",
     courseName: ""
   });
 
-  // סינון לפי קורס
+  // סינון לפי שם קורס
   const [courseFilter, setCourseFilter] = useState("");
 
-  // שמירת הפוסט שנמצא כרגע בעריכה
+  // הפוסט שנמצא כרגע בעריכה
   const [editingPostId, setEditingPostId] = useState(null);
 
-  // הנתונים של הפוסט בזמן עריכה
+  // נתוני הפוסט בזמן עריכה
   const [editPostData, setEditPostData] = useState({
     title: "",
     body: "",
     courseName: ""
   });
 
-  // הודעות
+  // הודעות מצב
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // טעינת שאלות בכניסה לעמוד
+  // טעינת שאלות כאשר העמוד נפתח
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -53,6 +53,7 @@ function Questions() {
 
       let url = `${API_URL}/posts`;
 
+      // אם המשתמש כתב קורס לחיפוש, מוסיפים אותו לכתובת
       if (courseFilter.trim()) {
         url += `?courseName=${courseFilter}`;
       }
@@ -88,11 +89,13 @@ function Questions() {
   const addPost = async (event) => {
     event.preventDefault();
 
+    // כותרת היא שדה חובה
     if (!newPost.title.trim()) {
       setError("Question title is required");
       return;
     }
 
+    // גוף השאלה הוא שדה חובה
     if (!newPost.body.trim()) {
       setError("Question body is required");
       return;
@@ -121,13 +124,15 @@ function Questions() {
         return;
       }
 
+      // ניקוי הטופס לאחר הוספה
       setNewPost({
         title: "",
         body: "",
         courseName: ""
       });
 
-      fetchPosts();
+      // צמצום פניות: מוסיפים את השאלה החדשה ל-state בלי GET נוסף
+      setPosts([data, ...posts]);
     } catch (err) {
       console.error("Add post error:", err);
       setError("Cannot connect to server");
@@ -156,7 +161,13 @@ function Questions() {
         return;
       }
 
-      fetchPosts();
+      // צמצום פניות: מסירים את השאלה מה-state בלי GET נוסף
+      setPosts(
+        posts.filter((post) => {
+          const currentId = post._id || post.id;
+          return currentId !== postId;
+        })
+      );
     } catch (err) {
       console.error("Delete post error:", err);
       setError("Cannot connect to server");
@@ -199,11 +210,13 @@ function Questions() {
 
   // שמירת עריכת שאלה
   const saveEditPost = async (postId) => {
+    // כותרת היא שדה חובה
     if (!editPostData.title.trim()) {
       setError("Question title is required");
       return;
     }
 
+    // גוף השאלה הוא שדה חובה
     if (!editPostData.body.trim()) {
       setError("Question body is required");
       return;
@@ -232,8 +245,21 @@ function Questions() {
         return;
       }
 
+      // צמצום פניות: מעדכנים את השאלה ב-state בלי GET נוסף
+      setPosts(
+        posts.map((post) => {
+          const currentId = post._id || post.id;
+
+          if (currentId === postId) {
+            return data;
+          }
+
+          return post;
+        })
+      );
+
+      // יציאה ממצב עריכה
       cancelEditPost();
-      fetchPosts();
     } catch (err) {
       console.error("Update post error:", err);
       setError("Cannot connect to server");
