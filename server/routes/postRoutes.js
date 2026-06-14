@@ -9,21 +9,39 @@ const router = express.Router();
 GET /posts
 GET /posts?userId=...
 GET /posts?courseName=Full Stack
+GET /posts?fromDate=2026-06-01
+GET /posts?toDate=2026-06-30
+GET /posts?dateSort=closest
+GET /posts?dateSort=oldest
+
 מחזיר פוסטים/שאלות.
-תומך בסינון לפי userId ו courseName.
-Returns posts/questions.
-Supports filtering by userId and courseName.
+תומך בסינון לפי:
+1. userId
+2. courseName
+3. טווח תאריכים לפי createdAt
+4. מיון לפי התאריך הקרוב ביותר / הישן ביותר
+
+הסינון מתבצע מול MongoDB ולא בצד React,
+כדי לצמצם גישות מיותרות לשרת ולבסיס הנתונים.
 */
 router.get("/", async (req, res) => {
   try {
-    const { userId, courseName } = req.query;
+    const {
+      userId,
+      courseName,
+      fromDate,
+      toDate,
+      dateSort
+    } = req.query;
 
     const filter = {};
 
+    // סינון לפי משתמש
     if (userId) {
       filter.userId = userId;
     }
 
+    // סינון לפי שם קורס
     if (courseName) {
       filter.courseName = {
         $regex: courseName,
@@ -31,9 +49,42 @@ router.get("/", async (req, res) => {
       };
     }
 
+    // סינון לפי תאריך יצירת הפוסט
+    if (fromDate || toDate) {
+      filter.createdAt = {};
+
+      // מתאריך מסוים
+      if (fromDate) {
+        filter.createdAt.$gte = new Date(fromDate);
+      }
+
+      // עד תאריך מסוים
+      if (toDate) {
+        const endDate = new Date(toDate);
+
+        // מוסיפים יום אחד כדי לכלול את כל היום שנבחר
+        endDate.setDate(endDate.getDate() + 1);
+
+        filter.createdAt.$lt = endDate;
+      }
+    }
+
+    /*
+      מיון לפי תאריך:
+      closest = הפוסטים החדשים ביותר קודם
+      oldest = הפוסטים הישנים ביותר קודם
+
+      ברירת מחדל: closest
+    */
+    let sortOption = { createdAt: -1 };
+
+    if (dateSort === "oldest") {
+      sortOption = { createdAt: 1 };
+    }
+
     const posts = await Post.find(filter)
-      .populate("userId", "fullName username email department studyYear")
-      .sort({ createdAt: -1 });
+      .populate("userId", "fullName username email department studyYear role isBlocked")
+      .sort(sortOption);
 
     res.json(posts);
   } catch (error) {
@@ -48,7 +99,6 @@ router.get("/", async (req, res) => {
 /*
 GET /posts/:id
 מחזיר פוסט/שאלה אחת לפי id.
-Returns one post/question by id.
 */
 router.get("/:id", async (req, res) => {
   try {
@@ -62,7 +112,7 @@ router.get("/:id", async (req, res) => {
 
     const post = await Post.findById(id).populate(
       "userId",
-      "fullName username email department studyYear"
+      "fullName username email department studyYear role isBlocked"
     );
 
     if (!post) {
@@ -83,16 +133,8 @@ router.get("/:id", async (req, res) => {
 
 /*
 POST /posts
-יוצר פוסט/שאלה חדשה.
-Creates a new question/post.
 
-Body:
-{
-  "userId": "...",
-  "title": "How do I connect MongoDB to Express?",
-  "body": "I need help with mongoose connection",
-  "courseName": "Full Stack"
-}
+יוצר פוסט/שאלה חדשה.
 */
 router.post("/", async (req, res) => {
   try {
@@ -113,7 +155,7 @@ router.post("/", async (req, res) => {
 
     const postWithUser = await Post.findById(newPost._id).populate(
       "userId",
-      "fullName username email department studyYear"
+      "fullName username email department studyYear role isBlocked"
     );
 
     res.status(201).json(postWithUser);
@@ -128,10 +170,9 @@ router.post("/", async (req, res) => {
 
 /*
 PUT /posts/:id
+
 מעדכן פוסט/שאלה.
 משתמש יכול לעדכן רק את הפוסט שלו.
-Updates a post/question.
-User can update only his own post.
 */
 router.put("/:id", async (req, res) => {
   try {
@@ -177,7 +218,7 @@ router.put("/:id", async (req, res) => {
 
     const postWithUser = await Post.findById(updatedPost._id).populate(
       "userId",
-      "fullName username email department studyYear"
+      "fullName username email department studyYear role isBlocked"
     );
 
     res.json(postWithUser);
@@ -192,10 +233,10 @@ router.put("/:id", async (req, res) => {
 
 /*
 DELETE /posts/:id?userId=...
-מחיק פוסט/שאלה.
+
+מוחק פוסט/שאלה.
 משתמש יכול למחוק רק את הפוסט שלו.
-Deletes a post/question.
-User can delete only his own post.
+בנוסף מוחק גם את כל התגובות של אותו פוסט.
 */
 router.delete("/:id", async (req, res) => {
   try {
@@ -225,12 +266,14 @@ router.delete("/:id", async (req, res) => {
       });
     }
 
-    const deletedCommentsResult = await Comment.deleteMany({ postId: id });
+    const deletedCommentsResult = await Comment.deleteMany({
+      postId: id
+    });
 
     res.json({
-        message: "Post and its comments deleted successfully",
-        deletedPost,
-        deletedCommentsCount: deletedCommentsResult.deletedCount
+      message: "Post and its comments deleted successfully",
+      deletedPost,
+      deletedCommentsCount: deletedCommentsResult.deletedCount
     });
   } catch (error) {
     console.error("Delete post error:", error.message);

@@ -7,6 +7,9 @@ import Tasks from "./pages/Tasks.jsx";
 import Questions from "./pages/Questions.jsx";
 import QuestionDetails from "./pages/QuestionDetails.jsx";
 import Profile from "./pages/Profile.jsx";
+import Admin from "./pages/Admin.jsx";
+import Albums from "./pages/Albums.jsx";
+import Photos from "./pages/Photos.jsx";
 
 // רכיב קטן שבודק אם המשתמש מחובר
 function ProtectedRoute({ children }) {
@@ -71,11 +74,38 @@ function App() {
           }
         />
 
-                <Route
+        <Route
           path="/profile"
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/albums"
+          element={
+            <ProtectedRoute>
+              <Albums />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/albums/:albumId/photos"
+          element={
+            <ProtectedRoute>
+              <Photos />
             </ProtectedRoute>
           }
         />

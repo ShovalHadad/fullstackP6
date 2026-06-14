@@ -23,8 +23,28 @@ function Questions() {
     courseName: ""
   });
 
-  // סינון לפי שם קורס
-  const [courseFilter, setCourseFilter] = useState("");
+  /*
+    סינונים לשאלות.
+
+    courseName:
+    - סינון לפי שם קורס
+
+    fromDate:
+    - הצגת פוסטים שנוצרו מתאריך מסוים
+
+    toDate:
+    - הצגת פוסטים שנוצרו עד תאריך מסוים
+
+    dateSort:
+    - closest = החדשים ביותר קודם
+    - oldest = הישנים ביותר קודם
+  */
+  const [filters, setFilters] = useState({
+    courseName: "",
+    fromDate: "",
+    toDate: "",
+    dateSort: "closest"
+  });
 
   // הפוסט שנמצא כרגע בעריכה
   const [editingPostId, setEditingPostId] = useState(null);
@@ -51,14 +71,38 @@ function Questions() {
       setLoading(true);
       setError("");
 
-      let url = `${API_URL}/posts`;
+      /*
+        URLSearchParams בונה את הפרמטרים לכתובת בצורה תקינה.
+
+        לדוגמה:
+        /posts?courseName=Full+Stack&fromDate=2026-06-01&toDate=2026-06-30&dateSort=closest
+
+        ככה הסינון מתבצע בצד השרת ובבסיס הנתונים,
+        ולא מביאים את כל הפוסטים ואז מסננים ב-React.
+      */
+      const params = new URLSearchParams();
 
       // אם המשתמש כתב קורס לחיפוש, מוסיפים אותו לכתובת
-      if (courseFilter.trim()) {
-        url += `?courseName=${courseFilter}`;
+      if (filters.courseName.trim()) {
+        params.append("courseName", filters.courseName);
       }
 
-      const response = await fetch(url);
+      // סינון מתאריך מסוים
+      if (filters.fromDate) {
+        params.append("fromDate", filters.fromDate);
+      }
+
+      // סינון עד תאריך מסוים
+      if (filters.toDate) {
+        params.append("toDate", filters.toDate);
+      }
+
+      // מיון לפי תאריך: closest / oldest
+      if (filters.dateSort) {
+        params.append("dateSort", filters.dateSort);
+      }
+
+      const response = await fetch(`${API_URL}/posts?${params.toString()}`);
       const data = await response.json();
 
       if (!response.ok) {
@@ -82,6 +126,26 @@ function Questions() {
     setNewPost({
       ...newPost,
       [name]: value
+    });
+  };
+
+  // עדכון שדות הסינון
+  const handleFilterChange = (event) => {
+    const { name, value } = event.target;
+
+    setFilters({
+      ...filters,
+      [name]: value
+    });
+  };
+
+  // ניקוי כל הסינונים
+  const clearFilters = () => {
+    setFilters({
+      courseName: "",
+      fromDate: "",
+      toDate: "",
+      dateSort: "closest"
     });
   };
 
@@ -131,7 +195,11 @@ function Questions() {
         courseName: ""
       });
 
-      // צמצום פניות: מוסיפים את השאלה החדשה ל-state בלי GET נוסף
+      /*
+        צמצום פניות לשרת ולבסיס הנתונים:
+        במקום לקרוא שוב ל-fetchPosts ולעשות GET חדש,
+        מוסיפים את השאלה החדשה ישירות ל-state.
+      */
       setPosts([data, ...posts]);
     } catch (err) {
       console.error("Add post error:", err);
@@ -161,7 +229,11 @@ function Questions() {
         return;
       }
 
-      // צמצום פניות: מסירים את השאלה מה-state בלי GET נוסף
+      /*
+        צמצום פניות לשרת ולבסיס הנתונים:
+        במקום להביא שוב את כל השאלות מהשרת,
+        מסירים מה-state רק את השאלה שנמחקה.
+      */
       setPosts(
         posts.filter((post) => {
           const currentId = post._id || post.id;
@@ -245,7 +317,11 @@ function Questions() {
         return;
       }
 
-      // צמצום פניות: מעדכנים את השאלה ב-state בלי GET נוסף
+      /*
+        צמצום פניות לשרת ולבסיס הנתונים:
+        במקום לעשות GET מחדש לכל השאלות,
+        מחליפים ב-state רק את הפוסט שהתעדכן.
+      */
       setPosts(
         posts.map((post) => {
           const currentId = post._id || post.id;
@@ -310,16 +386,46 @@ function Questions() {
           <button type="submit">Add Question</button>
         </form>
 
-        {/* סינון לפי קורס */}
+        {/* סינון שאלות לפי קורס ותאריך */}
         <div className="questions-filter">
           <input
             type="text"
+            name="courseName"
             placeholder="Search by course name"
-            value={courseFilter}
-            onChange={(e) => setCourseFilter(e.target.value)}
+            value={filters.courseName}
+            onChange={handleFilterChange}
           />
 
-          <button onClick={fetchPosts}>Filter</button>
+          <input
+            type="date"
+            name="fromDate"
+            value={filters.fromDate}
+            onChange={handleFilterChange}
+          />
+
+          <input
+            type="date"
+            name="toDate"
+            value={filters.toDate}
+            onChange={handleFilterChange}
+          />
+
+          <select
+            name="dateSort"
+            value={filters.dateSort}
+            onChange={handleFilterChange}
+          >
+            <option value="closest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+
+          <button type="button" onClick={fetchPosts}>
+            Filter
+          </button>
+
+          <button type="button" onClick={clearFilters}>
+            Clear
+          </button>
         </div>
 
         {loading ? (
@@ -386,6 +492,13 @@ function Questions() {
                           )}
 
                           <p>{post.body}</p>
+
+                          {/* הצגת תאריך יצירת הפוסט אם קיים */}
+                          {post.createdAt && (
+                            <p className="question-date">
+                              Created: {new Date(post.createdAt).toLocaleDateString()}
+                            </p>
+                          )}
                         </>
                       )}
 

@@ -66,13 +66,24 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // יצירת משתמש ללא סיסמה
+    /*
+      יצירת משתמש ללא סיסמה.
+
+      role:
+      - משתמש חדש נוצר כסטודנט רגיל
+      - לא מקבלים role מהלקוח כדי שמשתמש לא יוכל להפוך את עצמו ל-admin
+
+      isBlocked:
+      - משתמש חדש לא חסום כברירת מחדל
+    */
     const newUser = await User.create({
       fullName,
       username,
       email: normalizedEmail,
       department: normalizedDepartment,
-      studyYear
+      studyYear,
+      role: "student",
+      isBlocked: false
     });
 
     // הצפנת הסיסמה
@@ -91,7 +102,9 @@ router.post("/register", async (req, res) => {
       username: newUser.username,
       email: newUser.email,
       department: newUser.department,
-      studyYear: newUser.studyYear
+      studyYear: newUser.studyYear,
+      role: newUser.role,
+      isBlocked: newUser.isBlocked
     });
   } catch (error) {
     console.error("Register error:", error.message);
@@ -130,7 +143,8 @@ router.post("/login", async (req, res) => {
       });
     }
 
-        // בדיקה אם המשתמש חסום
+    // בדיקה אם המשתמש חסום
+    // אם המשתמש חסום, לא נותנים לו להתחבר בכלל
     if (user.isBlocked) {
       return res.status(403).json({
         message: "User is blocked"
@@ -161,13 +175,16 @@ router.post("/login", async (req, res) => {
     }
 
     // מחזירים את המשתמש בלי סיסמה
+    // חשוב להחזיר גם role ו-isBlocked כדי שה-React ידע אם המשתמש הוא admin
     res.json({
       _id: user._id,
       fullName: user.fullName,
       username: user.username,
       email: user.email,
       department: user.department,
-      studyYear: user.studyYear
+      studyYear: user.studyYear,
+      role: user.role,
+      isBlocked: user.isBlocked
     });
   } catch (error) {
     console.error("Login error:", error.message);

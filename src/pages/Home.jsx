@@ -70,12 +70,28 @@ function Home() {
               <strong>{currentUser.studyYear}</strong>
             </div>
           </div>
+
+          {/* הצגת תפקיד המשתמש במערכת */}
+          <div className="info-row">
+            <span>🔐</span>
+            <div>
+              <p>Role</p>
+              <strong>{currentUser.role || "student"}</strong>
+            </div>
+          </div>
         </div>
 
         {/* מעבר לעמוד שינוי פרטים */}
         <Link to="/profile" className="sidebar-profile-btn">
-        Edit Profile
+          Edit Profile
         </Link>
+
+        {/* מעבר לעמוד מנהל - מוצג רק למשתמש שהוא admin */}
+        {currentUser.role === "admin" && (
+          <Link to="/admin" className="sidebar-profile-btn">
+            Admin Panel
+          </Link>
+        )}
 
         {/* כפתור התנתקות בתחתית החלונית */}
         <button className="sidebar-logout-btn" onClick={handleLogout}>
@@ -128,6 +144,24 @@ function Home() {
             <p>Manage and track your study tasks</p>
             <button>Go to Tasks →</button>
           </Link>
+
+          {/* מעבר לעמוד אלבומים ותמונות */}
+          <Link to="/albums" className="space-card tasks-card">
+            <div className="card-circle">🖼️</div>
+            <h2>Albums</h2>
+            <p>Manage albums and study photos</p>
+            <button>Go to Albums →</button>
+          </Link>
+
+          {/* מעבר לעמוד מנהל - מוצג רק אם המשתמש הוא admin */}
+          {currentUser.role === "admin" && (
+            <Link to="/admin" className="space-card questions-card">
+              <div className="card-circle">🛡️</div>
+              <h2>Admin</h2>
+              <p>Manage users, permissions and blocking</p>
+              <button>Go to Admin →</button>
+            </Link>
+          )}
         </section>
       </main>
     </div>

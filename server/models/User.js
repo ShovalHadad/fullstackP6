@@ -32,6 +32,15 @@ const userSchema = new mongoose.Schema(
       default: 1
     },
 
+    // תפקיד המשתמש במערכת
+    // student = משתמש רגיל
+    // admin = מנהל
+    role: {
+      type: String,
+      enum: ["student", "admin"],
+      default: "student"
+    },
+
     // האם המשתמש חסום במערכת
     isBlocked: {
       type: Boolean,
