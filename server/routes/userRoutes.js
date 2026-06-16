@@ -5,7 +5,7 @@ const User = require("../models/User");
 const UserPassword = require("../models/UserPassword");
 
 const router = express.Router();
-
+//GET /users/:id
 // מחזיר פרטי משתמש לפי id
 router.get("/:id", async (req, res) => {
   try {
@@ -39,50 +39,107 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// עדכון פרטי משתמש
+/*
+PUT /users/:id
+
+עדכון פרטי משתמש.
+מאפשר לעדכן:
+- fullName
+- username
+- email
+- department
+- studyYear
+
+לא מעדכן סיסמה כאן.
+לשינוי סיסמה יש route נפרד.
+*/
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { fullName, email, department, studyYear } = req.body;
 
-    if (!fullName || !email) {
-      return res.status(400).json({
-        message: "Full name and email are required"
-      });
-    }
+    const {
+      fullName,
+      username,
+      email,
+      department,
+      studyYear
+    } = req.body;
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedDepartment = department ? department.trim().toLowerCase() : "";
+    // חיפוש המשתמש לפי id
+    const user = await User.findById(id);
 
-    // בדיקה שאין משתמש אחר עם אותו אימייל
-    const existingUser = await User.findOne({
-      email: normalizedEmail,
-      _id: { $ne: id }
-    });
-
-    if (existingUser) {
-      return res.status(409).json({
-        message: "Email already exists"
-      });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      {
-        fullName,
-        email: normalizedEmail,
-        department: normalizedDepartment,
-        studyYear
-      },
-      { new: true }
-    );
-
-    if (!updatedUser) {
+    if (!user) {
       return res.status(404).json({
         message: "User not found"
       });
     }
 
+    /*
+      אם רוצים לעדכן username,
+      קודם בודקים שאין משתמש אחר עם אותו username.
+    */
+    if (username !== undefined && username !== user.username) {
+      const existingUsername = await User.findOne({
+        username: username,
+        _id: { $ne: id }
+      });
+
+      if (existingUsername) {
+        return res.status(409).json({
+          message: "Username already exists"
+        });
+      }
+
+      user.username = username;
+    }
+
+    /*
+      אם רוצים לעדכן email,
+      מנרמלים אותו כמו בהרשמה:
+      trim + lowercase
+      וגם בודקים שאין משתמש אחר עם אותו email.
+    */
+    if (email !== undefined) {
+      const normalizedEmail = email.trim().toLowerCase();
+
+      if (normalizedEmail !== user.email) {
+        const existingEmail = await User.findOne({
+          email: normalizedEmail,
+          _id: { $ne: id }
+        });
+
+        if (existingEmail) {
+          return res.status(409).json({
+            message: "Email already exists"
+          });
+        }
+
+        user.email = normalizedEmail;
+      }
+    }
+
+    // עדכון שם מלא
+    if (fullName !== undefined) {
+      user.fullName = fullName;
+    }
+
+    /*
+      עדכון מחלקה:
+      trim + lowercase
+      לא מוחקים רווחים בין מילים.
+    */
+    if (department !== undefined) {
+      user.department = department.trim().toLowerCase();
+    }
+
+    // עדכון שנת לימוד
+    if (studyYear !== undefined) {
+      user.studyYear = studyYear;
+    }
+
+    const updatedUser = await user.save();
+
+    // מחזירים את המשתמש המעודכן בלי סיסמה
     res.json({
       _id: updatedUser._id,
       fullName: updatedUser.fullName,
@@ -90,6 +147,7 @@ router.put("/:id", async (req, res) => {
       email: updatedUser.email,
       department: updatedUser.department,
       studyYear: updatedUser.studyYear,
+      role: updatedUser.role,
       isBlocked: updatedUser.isBlocked
     });
   } catch (error) {
