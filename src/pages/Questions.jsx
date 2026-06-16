@@ -23,22 +23,7 @@ function Questions() {
     courseName: ""
   });
 
-  /*
-    סינונים לשאלות.
-
-    courseName:
-    - סינון לפי שם קורס
-
-    fromDate:
-    - הצגת פוסטים שנוצרו מתאריך מסוים
-
-    toDate:
-    - הצגת פוסטים שנוצרו עד תאריך מסוים
-
-    dateSort:
-    - closest = החדשים ביותר קודם
-    - oldest = הישנים ביותר קודם
-  */
+  // סינונים לשאלות
   const [filters, setFilters] = useState({
     courseName: "",
     fromDate: "",
@@ -60,44 +45,66 @@ function Questions() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // טעינת שאלות כאשר העמוד נפתח
+  // מפתח ייחודי לשמירת שאלות לפי הסינונים הנוכחיים
+  const getPostsStorageKey = () =>
+    `posts_${filters.courseName}_${filters.fromDate}_${filters.toDate}_${filters.dateSort}`;
+
+  // שמירת רשימת השאלות ב-sessionStorage
+  const savePostsToCache = (updatedPosts) => {
+    sessionStorage.setItem(getPostsStorageKey(), JSON.stringify(updatedPosts));
+  };
+
+  /*
+    שמירת שאלה בודדת לפני מעבר לעמוד הפירוט.
+
+    המטרה:
+    כשפותחים פוסט מתוך רשימת השאלות,
+    לא צריך לעשות שוב GET /posts/:id.
+    QuestionDetails יקח את הפוסט מה-sessionStorage.
+  */
+  const saveSinglePostToCache = (post) => {
+    const postId = post._id || post.id;
+    sessionStorage.setItem(`question_${postId}`, JSON.stringify(post));
+  };
+
+  /*
+    טעינת שאלות כאשר העמוד נפתח.
+
+    קודם בודקים אם הרשימה כבר קיימת ב-sessionStorage.
+    אם כן — מציגים אותה בלי קריאה לשרת.
+    אם לא — עושים GET אחד לשרת.
+  */
   useEffect(() => {
+    const savedPosts = sessionStorage.getItem(getPostsStorageKey());
+
+    if (savedPosts) {
+      setPosts(JSON.parse(savedPosts));
+      return;
+    }
+
     fetchPosts();
   }, []);
 
-  // הבאת שאלות מהשרת
+  // הבאת שאלות מהשרת לפי הסינונים
   const fetchPosts = async () => {
     try {
       setLoading(true);
       setError("");
 
-      /*
-        URLSearchParams בונה את הפרמטרים לכתובת בצורה תקינה.
-
-        לדוגמה:
-        /posts?courseName=Full+Stack&fromDate=2026-06-01&toDate=2026-06-30&dateSort=closest
-
-        ככה הסינון מתבצע בצד השרת ובבסיס הנתונים,
-        ולא מביאים את כל הפוסטים ואז מסננים ב-React.
-      */
       const params = new URLSearchParams();
 
-      // אם המשתמש כתב קורס לחיפוש, מוסיפים אותו לכתובת
       if (filters.courseName.trim()) {
         params.append("courseName", filters.courseName);
       }
 
-      // סינון מתאריך מסוים
       if (filters.fromDate) {
         params.append("fromDate", filters.fromDate);
       }
 
-      // סינון עד תאריך מסוים
       if (filters.toDate) {
         params.append("toDate", filters.toDate);
       }
 
-      // מיון לפי תאריך: closest / oldest
       if (filters.dateSort) {
         params.append("dateSort", filters.dateSort);
       }
@@ -111,6 +118,7 @@ function Questions() {
       }
 
       setPosts(data);
+      savePostsToCache(data);
     } catch (err) {
       console.error("Fetch posts error:", err);
       setError("Cannot connect to server");
@@ -119,7 +127,7 @@ function Questions() {
     }
   };
 
-  // עדכון שדות של שאלה חדשה
+  // עדכון שדות שאלה חדשה
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -139,7 +147,7 @@ function Questions() {
     });
   };
 
-  // ניקוי כל הסינונים
+  // ניקוי סינונים
   const clearFilters = () => {
     setFilters({
       courseName: "",
@@ -153,13 +161,11 @@ function Questions() {
   const addPost = async (event) => {
     event.preventDefault();
 
-    // כותרת היא שדה חובה
     if (!newPost.title.trim()) {
       setError("Question title is required");
       return;
     }
 
-    // גוף השאלה הוא שדה חובה
     if (!newPost.body.trim()) {
       setError("Question body is required");
       return;
@@ -188,7 +194,6 @@ function Questions() {
         return;
       }
 
-      // ניקוי הטופס לאחר הוספה
       setNewPost({
         title: "",
         body: "",
@@ -196,11 +201,18 @@ function Questions() {
       });
 
       /*
-        צמצום פניות לשרת ולבסיס הנתונים:
-        במקום לקרוא שוב ל-fetchPosts ולעשות GET חדש,
-        מוסיפים את השאלה החדשה ישירות ל-state.
+        צמצום קריאות:
+        לא עושים fetchPosts אחרי הוספה.
+        מעדכנים את state ואת sessionStorage.
       */
-      setPosts([data, ...posts]);
+      setPosts((prevPosts) => {
+        const updatedPosts = [data, ...prevPosts];
+
+        savePostsToCache(updatedPosts);
+        saveSinglePostToCache(data);
+
+        return updatedPosts;
+      });
     } catch (err) {
       console.error("Add post error:", err);
       setError("Cannot connect to server");
@@ -230,23 +242,31 @@ function Questions() {
       }
 
       /*
-        צמצום פניות לשרת ולבסיס הנתונים:
-        במקום להביא שוב את כל השאלות מהשרת,
-        מסירים מה-state רק את השאלה שנמחקה.
+        צמצום קריאות:
+        אחרי מחיקה לא עושים GET מחדש.
+        מסירים מה-state ומה-cache.
       */
-      setPosts(
-        posts.filter((post) => {
+      setPosts((prevPosts) => {
+        const updatedPosts = prevPosts.filter((post) => {
           const currentId = post._id || post.id;
           return currentId !== postId;
-        })
-      );
+        });
+
+        savePostsToCache(updatedPosts);
+
+        // אם הפוסט נמחק, מוחקים גם את הפרטים והתגובות שלו מה-cache
+        sessionStorage.removeItem(`question_${postId}`);
+        sessionStorage.removeItem(`comments_${postId}`);
+
+        return updatedPosts;
+      });
     } catch (err) {
       console.error("Delete post error:", err);
       setError("Cannot connect to server");
     }
   };
 
-  // התחלת עריכה של שאלה
+  // התחלת עריכת שאלה
   const startEditPost = (post) => {
     const postId = post._id || post.id;
 
@@ -259,7 +279,7 @@ function Questions() {
     });
   };
 
-  // ביטול עריכה
+  // ביטול עריכת שאלה
   const cancelEditPost = () => {
     setEditingPostId(null);
 
@@ -282,13 +302,11 @@ function Questions() {
 
   // שמירת עריכת שאלה
   const saveEditPost = async (postId) => {
-    // כותרת היא שדה חובה
     if (!editPostData.title.trim()) {
       setError("Question title is required");
       return;
     }
 
-    // גוף השאלה הוא שדה חובה
     if (!editPostData.body.trim()) {
       setError("Question body is required");
       return;
@@ -318,12 +336,12 @@ function Questions() {
       }
 
       /*
-        צמצום פניות לשרת ולבסיס הנתונים:
-        במקום לעשות GET מחדש לכל השאלות,
-        מחליפים ב-state רק את הפוסט שהתעדכן.
+        צמצום קריאות:
+        אחרי עריכה לא עושים GET מחדש.
+        מעדכנים את הפוסט גם ברשימה וגם ב-cache של הפוסט הבודד.
       */
-      setPosts(
-        posts.map((post) => {
+      setPosts((prevPosts) => {
+        const updatedPosts = prevPosts.map((post) => {
           const currentId = post._id || post.id;
 
           if (currentId === postId) {
@@ -331,10 +349,14 @@ function Questions() {
           }
 
           return post;
-        })
-      );
+        });
 
-      // יציאה ממצב עריכה
+        savePostsToCache(updatedPosts);
+        saveSinglePostToCache(data);
+
+        return updatedPosts;
+      });
+
       cancelEditPost();
     } catch (err) {
       console.error("Update post error:", err);
@@ -386,46 +408,60 @@ function Questions() {
           <button type="submit">Add Question</button>
         </form>
 
-        {/* סינון שאלות לפי קורס ותאריך */}
-        <div className="questions-filter">
-          <input
-            type="text"
-            name="courseName"
-            placeholder="Search by course name"
-            value={filters.courseName}
-            onChange={handleFilterChange}
-          />
+        {/* אזור סינונים */}
+        <div className="filters-box">
+          <div className="filter-field">
+            <label>Course</label>
+            <input
+              type="text"
+              name="courseName"
+              placeholder="Search by course"
+              value={filters.courseName}
+              onChange={handleFilterChange}
+            />
+          </div>
 
-          <input
-            type="date"
-            name="fromDate"
-            value={filters.fromDate}
-            onChange={handleFilterChange}
-          />
+          <div className="filter-field">
+            <label>From Date</label>
+            <input
+              type="date"
+              name="fromDate"
+              value={filters.fromDate}
+              onChange={handleFilterChange}
+            />
+          </div>
 
-          <input
-            type="date"
-            name="toDate"
-            value={filters.toDate}
-            onChange={handleFilterChange}
-          />
+          <div className="filter-field">
+            <label>To Date</label>
+            <input
+              type="date"
+              name="toDate"
+              value={filters.toDate}
+              onChange={handleFilterChange}
+            />
+          </div>
 
-          <select
-            name="dateSort"
-            value={filters.dateSort}
-            onChange={handleFilterChange}
-          >
-            <option value="closest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-          </select>
+          <div className="filter-field">
+            <label>Sort</label>
+            <select
+              name="dateSort"
+              value={filters.dateSort}
+              onChange={handleFilterChange}
+            >
+              <option value="closest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+          </div>
 
-          <button type="button" onClick={fetchPosts}>
-            Filter
-          </button>
+          <div className="filter-buttons">
+            <button type="button" className="filter-btn" onClick={fetchPosts}>
+              Filter
+            </button>
 
-          <button type="button" onClick={clearFilters}>
-            Clear
-          </button>
+            <button type="button" className="clear-filter-btn" onClick={clearFilters}>
+              Clear
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -493,7 +529,6 @@ function Questions() {
 
                           <p>{post.body}</p>
 
-                          {/* הצגת תאריך יצירת הפוסט אם קיים */}
                           {post.createdAt && (
                             <p className="question-date">
                               Created: {new Date(post.createdAt).toLocaleDateString()}
@@ -508,7 +543,15 @@ function Questions() {
                     </div>
 
                     <div className="question-actions">
-                      <Link to={`/questions/${postId}`} className="open-question-btn">
+                      {/*
+                        לפני המעבר לעמוד הפירוט שומרים את הפוסט ב-cache.
+                        כך QuestionDetails לא יצטרך לעשות GET /posts/:id.
+                      */}
+                      <Link
+                        to={`/questions/${postId}`}
+                        className="open-question-btn"
+                        onClick={() => saveSinglePostToCache(post)}
+                      >
                         Open
                       </Link>
 

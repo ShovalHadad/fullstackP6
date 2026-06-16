@@ -35,13 +35,42 @@ function QuestionDetails() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // טעינת השאלה והתגובות בכניסה לעמוד
+  // מפתחות לשמירה זמנית של השאלה והתגובות בדפדפן
+  const postStorageKey = `question_${id}`;
+  const commentsStorageKey = `comments_${id}`;
+
+  // שמירת תגובות ב-sessionStorage כדי למנוע GET מיותר בחזרה למסך
+  const saveCommentsToCache = (updatedComments) => {
+    sessionStorage.setItem(commentsStorageKey, JSON.stringify(updatedComments));
+  };
+
+  /*
+    טעינת השאלה והתגובות בכניסה לעמוד.
+
+    אם נכנסנו מהמסך Questions, הפוסט כבר נשמר ב-sessionStorage,
+    ולכן לא תתבצע קריאת GET /posts/:id.
+
+    אם נכנסנו ישירות לכתובת של הפוסט ואין cache,
+    רק אז תתבצע קריאת GET /posts/:id.
+  */
   useEffect(() => {
-    fetchPost();
-    fetchComments();
+    const savedPost = sessionStorage.getItem(postStorageKey);
+    const savedComments = sessionStorage.getItem(commentsStorageKey);
+
+    if (savedPost) {
+      setPost(JSON.parse(savedPost));
+    } else {
+      fetchPost();
+    }
+
+    if (savedComments) {
+      setComments(JSON.parse(savedComments));
+    } else {
+      fetchComments();
+    }
   }, [id]);
 
-  // הבאת פרטי השאלה מהשרת
+  // הבאת פרטי השאלה מהשרת — מתבצע רק אם אין את הפוסט ב-cache
   const fetchPost = async () => {
     try {
       setError("");
@@ -55,13 +84,14 @@ function QuestionDetails() {
       }
 
       setPost(data);
+      sessionStorage.setItem(postStorageKey, JSON.stringify(data));
     } catch (err) {
       console.error("Fetch post error:", err);
       setError("Cannot connect to server");
     }
   };
 
-  // הבאת התגובות של השאלה מהשרת
+  // הבאת התגובות של השאלה מהשרת — מתבצע רק אם אין תגובות ב-cache
   const fetchComments = async () => {
     try {
       setLoading(true);
@@ -76,6 +106,7 @@ function QuestionDetails() {
       }
 
       setComments(data);
+      saveCommentsToCache(data);
     } catch (err) {
       console.error("Fetch comments error:", err);
       setError("Cannot connect to server");
@@ -88,7 +119,6 @@ function QuestionDetails() {
   const addComment = async (event) => {
     event.preventDefault();
 
-    // לא מאפשרים להוסיף תגובה ריקה
     if (!newComment.trim()) {
       setError("Comment body is required");
       return;
@@ -116,11 +146,18 @@ function QuestionDetails() {
         return;
       }
 
-      // ניקוי השדה אחרי הוספה
       setNewComment("");
 
-      // צמצום פניות: מוסיפים את התגובה החדשה ל-state בלי GET נוסף
-      setComments([...comments, data]);
+      /*
+        צמצום קריאות:
+        לא עושים fetchComments אחרי הוספה.
+        מעדכנים את state ואת sessionStorage.
+      */
+      setComments((prevComments) => {
+        const updatedComments = [...prevComments, data];
+        saveCommentsToCache(updatedComments);
+        return updatedComments;
+      });
     } catch (err) {
       console.error("Add comment error:", err);
       setError("Cannot connect to server");
@@ -133,7 +170,7 @@ function QuestionDetails() {
     return String(commentUserId) === String(userId);
   };
 
-  // התחלת עריכה של תגובה
+  // התחלת עריכת תגובה
   const startEditComment = (comment) => {
     const commentId = comment._id || comment.id;
 
@@ -149,7 +186,6 @@ function QuestionDetails() {
 
   // שמירת עריכת תגובה
   const saveEditComment = async (commentId) => {
-    // לא מאפשרים לשמור תגובה ריקה
     if (!editCommentBody.trim()) {
       setError("Comment body is required");
       return;
@@ -176,9 +212,13 @@ function QuestionDetails() {
         return;
       }
 
-      // צמצום פניות: מעדכנים את התגובה ב-state בלי GET נוסף
-      setComments(
-        comments.map((comment) => {
+      /*
+        צמצום קריאות:
+        לא עושים fetchComments אחרי עריכה.
+        מעדכנים תגובה קיימת ב-state וב-cache.
+      */
+      setComments((prevComments) => {
+        const updatedComments = prevComments.map((comment) => {
           const currentId = comment._id || comment.id;
 
           if (currentId === commentId) {
@@ -186,10 +226,12 @@ function QuestionDetails() {
           }
 
           return comment;
-        })
-      );
+        });
 
-      // יציאה ממצב עריכה
+        saveCommentsToCache(updatedComments);
+        return updatedComments;
+      });
+
       cancelEditComment();
     } catch (err) {
       console.error("Update comment error:", err);
@@ -213,13 +255,20 @@ function QuestionDetails() {
         return;
       }
 
-      // צמצום פניות: מסירים את התגובה מה-state בלי GET נוסף
-      setComments(
-        comments.filter((comment) => {
+      /*
+        צמצום קריאות:
+        לא עושים fetchComments אחרי מחיקה.
+        מסירים את התגובה מה-state ומה-cache.
+      */
+      setComments((prevComments) => {
+        const updatedComments = prevComments.filter((comment) => {
           const currentId = comment._id || comment.id;
           return currentId !== commentId;
-        })
-      );
+        });
+
+        saveCommentsToCache(updatedComments);
+        return updatedComments;
+      });
     } catch (err) {
       console.error("Delete comment error:", err);
       setError("Cannot connect to server");

@@ -16,7 +16,15 @@ function Home() {
 
   // התנתקות מהמערכת
   const handleLogout = () => {
+    // מוחקים את המשתמש המחובר
     localStorage.removeItem("currentUser");
+
+    /*
+      מנקים את כל הנתונים הזמניים ששמרנו בדפדפן.
+      זה חשוב כדי שמשתמש אחר לא יראה בטעות נתונים של משתמש קודם.
+    */
+    sessionStorage.clear();
+
     navigate("/login");
   };
 
@@ -24,18 +32,15 @@ function Home() {
     <div className="space-home-page">
       {/* חלונית צד שמאל עם פרטי הסטודנט */}
       <aside className="info-sidebar">
-        {/* אזור עליון עם תמונת משתמש ושם */}
         <div className="user-top">
           <div className="avatar">👤</div>
 
           <div>
-            {/* במקום שם קבוע, מציגים את שם המשתמש המחובר */}
             <h2>{currentUser.fullName}</h2>
             <p>{currentUser.department}</p>
           </div>
         </div>
 
-        {/* כרטיס פרטים אישיים של הסטודנט */}
         <div className="student-info-box">
           <h3>ⓘ Student Info</h3>
 
@@ -71,7 +76,6 @@ function Home() {
             </div>
           </div>
 
-          {/* הצגת תפקיד המשתמש במערכת */}
           <div className="info-row">
             <span>🔐</span>
             <div>
@@ -81,35 +85,26 @@ function Home() {
           </div>
         </div>
 
-        {/* מעבר לעמוד שינוי פרטים */}
         <Link to="/profile" className="sidebar-profile-btn">
           Edit Profile
         </Link>
 
-        {/* מעבר לעמוד מנהל - מוצג רק למשתמש שהוא admin */}
         {currentUser.role === "admin" && (
           <Link to="/admin" className="sidebar-profile-btn">
             Admin Panel
           </Link>
         )}
 
-        {/* כפתור התנתקות בתחתית החלונית */}
         <button className="sidebar-logout-btn" onClick={handleLogout}>
           Logout
         </button>
       </aside>
 
-      {/* האזור המרכזי של עמוד הבית */}
       <main className="home-main">
-        {/* אזור עליון של המותג */}
         <div className="top-section">
           <div className="brand-header">
-            {/* שם המערכת במרכז */}
-            <h1 className="project-title">
-              UniSpace
-            </h1>
+            <h1 className="project-title">UniSpace</h1>
 
-            {/* לוגו בצד ימין של אותה שורה */}
             <img
               src={logo}
               alt="UniSpace Logo"
@@ -117,19 +112,16 @@ function Home() {
             />
           </div>
 
-          {/* סלוגן של המערכת */}
           <p className="project-slogan">
             Study • Connect • Achieve
           </p>
 
-          {/* הודעת ברוכים הבאים */}
           <section className="welcome-section">
             <h2>Welcome Back, {currentUser.fullName} 👋</h2>
             <p>What would you like to do today?</p>
           </section>
         </div>
 
-        {/* כרטיסי ניווט ראשיים */}
         <section className="home-actions">
           <Link to="/questions" className="space-card questions-card">
             <div className="card-circle">🚀</div>
@@ -145,7 +137,6 @@ function Home() {
             <button>Go to Tasks →</button>
           </Link>
 
-          {/* מעבר לעמוד אלבומים ותמונות */}
           <Link to="/albums" className="space-card tasks-card">
             <div className="card-circle">🖼️</div>
             <h2>Albums</h2>
@@ -153,7 +144,6 @@ function Home() {
             <button>Go to Albums →</button>
           </Link>
 
-          {/* מעבר לעמוד מנהל - מוצג רק אם המשתמש הוא admin */}
           {currentUser.role === "admin" && (
             <Link to="/admin" className="space-card questions-card">
               <div className="card-circle">🛡️</div>

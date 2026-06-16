@@ -1069,3 +1069,169 @@ body {
     gap: 15px;
   }
 }
+
+/* אזור הסינונים בעמוד השאלות */
+.filters-box {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr auto;
+  gap: 14px;
+  align-items: end;
+  margin: 22px 0 26px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(140, 160, 255, 0.25);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+/* כל שדה בסינון */
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+/* כותרת קטנה מעל כל שדה */
+.filter-field label {
+  color: #d6dcff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* עיצוב אחיד ל-input ול-select */
+.filter-field input,
+.filter-field select {
+  height: 44px;
+  padding: 0 13px;
+  border: 1px solid rgba(160, 175, 255, 0.35);
+  border-radius: 12px;
+  background: rgba(8, 18, 70, 0.85);
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+/* צבע placeholder */
+.filter-field input::placeholder {
+  color: #aeb8e8;
+}
+
+/* אפקט כאשר לוחצים על שדה */
+.filter-field input:focus,
+.filter-field select:focus {
+  border-color: #6f7cff;
+  box-shadow: 0 0 0 3px rgba(111, 124, 255, 0.22);
+}
+
+/* כפתורי הסינון */
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* כפתור Filter */
+.filter-btn {
+  height: 44px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #4f6bff, #7b5cff);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+/* כפתור Clear */
+.clear-filter-btn {
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid rgba(160, 175, 255, 0.35);
+  border-radius: 12px;
+  background: transparent;
+  color: #dbe2ff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+/* אפקט hover לכפתורים */
+.filter-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(79, 107, 255, 0.35);
+}
+
+.clear-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* התאמה למסכים קטנים */
+@media (max-width: 900px) {
+  .filters-box {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .filter-buttons {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 600px) {
+  .filters-box {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-buttons {
+    grid-column: span 1;
+    flex-direction: column;
+  }
+
+  .filter-btn,
+  .clear-filter-btn {
+    width: 100%;
+  }
+}
+
+/* התאמה של אזור הפילטרים גם לעמוד המשימות */
+.task-filters.filters-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 14px;
+  align-items: end;
+  margin: 22px 0 26px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(140, 160, 255, 0.25);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+/* התאמה למסכים בינוניים */
+@media (max-width: 900px) {
+  .task-filters.filters-box {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .task-filters .filter-buttons {
+    grid-column: span 2;
+  }
+}
+
+/* התאמה למסכים קטנים */
+@media (max-width: 600px) {
+  .task-filters.filters-box {
+    grid-template-columns: 1fr;
+  }
+
+  .task-filters .filter-buttons {
+    grid-column: span 1;
+    flex-direction: column;
+  }
+
+  .task-filters .filter-btn,
+  .task-filters .clear-filter-btn {
+    width: 100%;
+  }
+}

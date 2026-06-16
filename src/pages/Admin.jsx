@@ -24,6 +24,15 @@ function Admin() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // מפתח ייחודי לשמירת המשתמשים לפי admin והסינונים הנוכחיים
+  const getUsersStorageKey = () =>
+    `admin_users_${currentUser?._id}_${filters.search}_${filters.department}_${filters.isBlocked}_${filters.role}`;
+
+  // שמירת רשימת המשתמשים ב-sessionStorage כדי למנוע GET מיותר בחזרה למסך
+  const saveUsersToCache = (updatedUsers) => {
+    sessionStorage.setItem(getUsersStorageKey(), JSON.stringify(updatedUsers));
+  };
+
   // בדיקה שהמשתמש מחובר והוא מנהל
   useEffect(() => {
     if (!currentUser) {
@@ -33,6 +42,13 @@ function Admin() {
 
     if (currentUser.role !== "admin") {
       navigate("/home");
+      return;
+    }
+
+    const savedUsers = sessionStorage.getItem(getUsersStorageKey());
+
+    if (savedUsers) {
+      setUsers(JSON.parse(savedUsers));
       return;
     }
 
@@ -79,6 +95,7 @@ function Admin() {
       }
 
       setUsers(data);
+      saveUsersToCache(data);
     } catch (err) {
       console.error("Fetch users error:", err);
       setError("Cannot connect to server");
@@ -142,15 +159,18 @@ function Admin() {
         לא עושים GET מחדש לכל המשתמשים.
         מעדכנים רק את המשתמש שהשתנה בתוך ה-state.
       */
-      setUsers(
-        users.map((item) => {
+      setUsers((prevUsers) => {
+        const updatedUsers = prevUsers.map((item) => {
           if (item._id === data._id) {
             return data;
           }
 
           return item;
-        })
-      );
+        });
+
+        saveUsersToCache(updatedUsers);
+        return updatedUsers;
+      });
 
       setMessage(data.isBlocked ? "User blocked successfully" : "User unblocked successfully");
     } catch (err) {
@@ -188,15 +208,18 @@ function Admin() {
         לא שולפים שוב את כל המשתמשים.
         מחליפים רק את המשתמש שהתפקיד שלו השתנה.
       */
-      setUsers(
-        users.map((item) => {
+      setUsers((prevUsers) => {
+        const updatedUsers = prevUsers.map((item) => {
           if (item._id === data._id) {
             return data;
           }
 
           return item;
-        })
-      );
+        });
+
+        saveUsersToCache(updatedUsers);
+        return updatedUsers;
+      });
 
       setMessage("User role updated successfully");
     } catch (err) {

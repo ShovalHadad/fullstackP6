@@ -46,10 +46,56 @@ function Tasks() {
   // סינון לפי מצב ביצוע
   const [completedFilter, setCompletedFilter] = useState("all");
 
-  // טעינת המשימות כשהעמוד נפתח
+  /*
+    מפתח לשמירת משימות ב-sessionStorage.
+
+    שמים את userId בתוך המפתח כדי שכל משתמש יקבל cache נפרד.
+    שמים גם את הסינונים כדי שכל תוצאת סינון תישמר בנפרד.
+  */
+  const getTasksStorageKey = () => {
+    return `tasks_${userId}_${filters.fromDate}_${filters.toDate}_${completedFilter}`;
+  };
+
+  // שמירת משימות ב-sessionStorage
+  const saveTasksToCache = (updatedTasks) => {
+    sessionStorage.setItem(
+      getTasksStorageKey(),
+      JSON.stringify(updatedTasks)
+    );
+  };
+
+  /*
+    טעינת המשימות כשהעמוד נפתח.
+
+    קודם בודקים אם כבר יש משימות שמורות ב-sessionStorage.
+    אם כן — מציגים אותן בלי קריאת GET נוספת לשרת.
+    אם לא — קוראים לשרת פעם אחת ושומרים את התוצאה.
+  */
   useEffect(() => {
+    if (!userId) {
+      setError("User was not found. Please login again.");
+      return;
+    }
+
+    const savedTasks = sessionStorage.getItem(getTasksStorageKey());
+
+    if (savedTasks) {
+      setTasks(JSON.parse(savedTasks));
+      return;
+    }
+
     fetchTasks();
   }, []);
+
+  // מיון משימות לפי id כדי שתהיה תצוגה קבועה
+  const sortTasksById = (tasksToSort) => {
+    return [...tasksToSort].sort((a, b) => {
+      const firstId = a.id || a._id;
+      const secondId = b.id || b._id;
+
+      return String(firstId).localeCompare(String(secondId));
+    });
+  };
 
   // הבאת המשימות של המשתמש מהשרת
   const fetchTasks = async () => {
@@ -92,15 +138,16 @@ function Tasks() {
         return;
       }
 
-      // מיון לפי id
-      const sortedTasks = data.sort((a, b) => {
-        const firstId = a.id || a._id;
-        const secondId = b.id || b._id;
+      // מיון המשימות
+      const sortedTasks = sortTasksById(data);
 
-        return String(firstId).localeCompare(String(secondId));
-      });
-
+      /*
+        שומרים גם ב-state וגם ב-sessionStorage.
+        כך אם חוזרים לעמוד Tasks או עושים Refresh,
+        לא חייבים לקרוא שוב לשרת.
+      */
       setTasks(sortedTasks);
+      saveTasksToCache(sortedTasks);
     } catch (err) {
       console.error("Fetch tasks error:", err);
       setError("Cannot connect to server");
@@ -119,7 +166,7 @@ function Tasks() {
     });
   };
 
-  // עדכון שדות הסינון
+  // עדכון שדות הסינון לפי תאריכים
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
 
@@ -127,6 +174,26 @@ function Tasks() {
       ...filters,
       [name]: value
     });
+  };
+
+  /*
+    הפעלת סינון.
+
+    כאן כן עושים קריאה לשרת כי המשתמש ביקש תוצאה מסוננת.
+    אבל אחרי שהנתונים חוזרים, הם נשמרים ב-sessionStorage.
+  */
+  const applyFilters = () => {
+    fetchTasks();
+  };
+
+  // ניקוי סינונים בלי קריאה אוטומטית לשרת
+  const clearFilters = () => {
+    setFilters({
+      fromDate: "",
+      toDate: ""
+    });
+
+    setCompletedFilter("all");
   };
 
   // הוספת משימה חדשה
@@ -148,6 +215,11 @@ function Tasks() {
     try {
       setError("");
 
+      /*
+        קריאה אחת בלבד לשרת לצורך יצירת משימה.
+        אחרי שהשרת מחזיר את המשימה החדשה,
+        לא עושים GET נוסף.
+      */
       const response = await fetch(`${API_URL}/todos`, {
         method: "POST",
         headers: {
@@ -176,8 +248,18 @@ function Tasks() {
         dueDate: ""
       });
 
-      // צמצום פניות: מוסיפים את המשימה החדשה ל-state בלי GET נוסף
-      setTasks([...tasks, data]);
+      /*
+        צמצום קריאות לשרת:
+        לא עושים fetchTasks אחרי הוספה.
+        מוסיפים את המשימה החדשה ישירות ל-state ול-sessionStorage.
+      */
+      setTasks((prevTasks) => {
+        const updatedTasks = sortTasksById([...prevTasks, data]);
+
+        saveTasksToCache(updatedTasks);
+
+        return updatedTasks;
+      });
     } catch (err) {
       console.error("Add task error:", err);
       setError("Cannot connect to server");
@@ -191,15 +273,21 @@ function Tasks() {
     try {
       setError("");
 
+      /*
+        קריאה אחת בלבד לשרת לצורך עדכון completed.
+        לא עושים GET נוסף אחרי העדכון.
+      */
       const response = await fetch(`${API_URL}/todos/${taskId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          ...task,
-          completed: !task.completed,
-          userId
+          userId,
+          title: task.title,
+          description: task.description,
+          dueDate: task.dueDate,
+          completed: !task.completed
         })
       });
 
@@ -210,12 +298,19 @@ function Tasks() {
         return;
       }
 
-      // צמצום פניות: מעדכנים את המשימה ברשימה בלי GET נוסף
-      setTasks(
-        tasks.map((item) =>
+      /*
+        צמצום קריאות לשרת:
+        מעדכנים את המשימה ברשימה וב-sessionStorage בלי GET נוסף.
+      */
+      setTasks((prevTasks) => {
+        const updatedTasks = prevTasks.map((item) =>
           (item._id || item.id) === taskId ? data : item
-        )
-      );
+        );
+
+        saveTasksToCache(updatedTasks);
+
+        return updatedTasks;
+      });
     } catch (err) {
       console.error("Update task error:", err);
       setError("Cannot connect to server");
@@ -275,6 +370,10 @@ function Tasks() {
     try {
       setError("");
 
+      /*
+        קריאה אחת בלבד לשרת לצורך עריכת משימה.
+        אחרי העדכון לא עושים GET נוסף.
+      */
       const response = await fetch(`${API_URL}/todos/${taskId}`, {
         method: "PUT",
         headers: {
@@ -296,12 +395,19 @@ function Tasks() {
         return;
       }
 
-      // צמצום פניות: מעדכנים את המשימה הערוכה ברשימה בלי GET נוסף
-      setTasks(
-        tasks.map((item) =>
+      /*
+        צמצום קריאות לשרת:
+        מעדכנים את המשימה הערוכה ב-state וב-sessionStorage.
+      */
+      setTasks((prevTasks) => {
+        const updatedTasks = prevTasks.map((item) =>
           (item._id || item.id) === taskId ? data : item
-        )
-      );
+        );
+
+        saveTasksToCache(updatedTasks);
+
+        return updatedTasks;
+      });
 
       cancelEditTask();
     } catch (err) {
@@ -315,6 +421,10 @@ function Tasks() {
     try {
       setError("");
 
+      /*
+        קריאה אחת בלבד לשרת לצורך מחיקה.
+        אחרי המחיקה לא עושים GET נוסף.
+      */
       const response = await fetch(`${API_URL}/todos/${taskId}?userId=${userId}`, {
         method: "DELETE"
       });
@@ -326,10 +436,19 @@ function Tasks() {
         return;
       }
 
-      // צמצום פניות: מסירים את המשימה מה-state בלי GET נוסף
-      setTasks(
-        tasks.filter((item) => (item._id || item.id) !== taskId)
-      );
+      /*
+        צמצום קריאות לשרת:
+        מסירים את המשימה מה-state ומה-sessionStorage בלי GET נוסף.
+      */
+      setTasks((prevTasks) => {
+        const updatedTasks = prevTasks.filter(
+          (item) => (item._id || item.id) !== taskId
+        );
+
+        saveTasksToCache(updatedTasks);
+
+        return updatedTasks;
+      });
     } catch (err) {
       console.error("Delete task error:", err);
       setError("Cannot connect to server");
@@ -377,37 +496,53 @@ function Tasks() {
             onChange={handleTaskChange}
           />
 
-          <button type="submit">Add Task</button>
+          <button type="submit" className="filter-btn">Add Task</button>
         </form>
 
         {/* סינון משימות */}
-        <div className="task-filters">
-          <input
-            type="date"
-            name="fromDate"
-            value={filters.fromDate}
-            onChange={handleFilterChange}
-          />
+        <div className="task-filters filters-box">
+          <div className="filter-field">
+            <label>From Date</label>
+            <input
+              type="date"
+              name="fromDate"
+              value={filters.fromDate}
+              onChange={handleFilterChange}
+            />
+          </div>
 
-          <input
-            type="date"
-            name="toDate"
-            value={filters.toDate}
-            onChange={handleFilterChange}
-          />
+          <div className="filter-field">
+            <label>To Date</label>
+            <input
+              type="date"
+              name="toDate"
+              value={filters.toDate}
+              onChange={handleFilterChange}
+            />
+          </div>
 
-          <select
-            value={completedFilter}
-            onChange={(e) => setCompletedFilter(e.target.value)}
-          >
-            <option value="all">All Tasks</option>
-            <option value="completed">Completed</option>
-            <option value="notCompleted">Not Completed</option>
-          </select>
+          <div className="filter-field">
+            <label>Status</label>
+            <select
+              value={completedFilter}
+              onChange={(event) => setCompletedFilter(event.target.value)}
+            >
+              <option value="all">All Tasks</option>
+              <option value="completed">Completed</option>
+              <option value="notCompleted">Not Completed</option>
+            </select>
+          </div>
 
-          <button onClick={fetchTasks}>Filter</button>
+          <div className="filter-buttons">
+            <button type="button" className="filter-btn" onClick={applyFilters}>
+              Filter
+            </button>
+
+            <button type="button" className="clear-filter-btn" onClick={clearFilters}>
+              Clear
+            </button>
+          </div>
         </div>
-
         {loading ? (
           <p className="tasks-loading">Loading tasks...</p>
         ) : (
@@ -489,6 +624,7 @@ function Tasks() {
 
                     <div className="task-actions">
                       <button
+                        type="button"
                         className="edit-btn"
                         onClick={() => startEditTask(task)}
                       >
@@ -496,6 +632,7 @@ function Tasks() {
                       </button>
 
                       <button
+                        type="button"
                         className="delete-task-btn"
                         onClick={() => deleteTask(taskId)}
                       >

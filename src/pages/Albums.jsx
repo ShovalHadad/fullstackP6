@@ -13,6 +13,12 @@ function Albums() {
     currentUser?._id ||
     currentUser?.id;
 
+  /*
+    מפתח ייחודי לשמירת האלבומים של המשתמש בדפדפן.
+    ככה כשחוזרים מ-Photos ל-Albums לא צריך לקרוא שוב לשרת.
+  */
+  const albumsStorageKey = `albums_${userId}`;
+
   // רשימת אלבומים
   const [albums, setAlbums] = useState([]);
 
@@ -26,8 +32,26 @@ function Albums() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // טעינת אלבומים כאשר העמוד נפתח
+  /*
+    טעינת אלבומים כאשר העמוד נפתח.
+
+    קודם בודקים אם כבר יש אלבומים שמורים ב-sessionStorage.
+    אם כן — מציגים אותם ולא עושים GET נוסף לשרת.
+    אם לא — מביאים מהשרת פעם אחת ושומרים ב-sessionStorage.
+  */
   useEffect(() => {
+    if (!userId) {
+      setError("User was not found. Please login again.");
+      return;
+    }
+
+    const savedAlbums = sessionStorage.getItem(albumsStorageKey);
+
+    if (savedAlbums) {
+      setAlbums(JSON.parse(savedAlbums));
+      return;
+    }
+
     fetchAlbums();
   }, []);
 
@@ -49,7 +73,9 @@ function Albums() {
         return;
       }
 
+      // שומרים גם ב-state וגם ב-sessionStorage כדי למנוע קריאה חוזרת מיותרת
       setAlbums(data);
+      sessionStorage.setItem(albumsStorageKey, JSON.stringify(data));
     } catch (err) {
       console.error("Fetch albums error:", err);
       setError("Cannot connect to server");
@@ -107,9 +133,18 @@ function Albums() {
       /*
         צמצום קריאות לשרת:
         אחרי יצירת אלבום לא עושים GET נוסף.
-        מוסיפים את האלבום החדש ישירות ל-state.
+        מוסיפים את האלבום החדש ישירות ל-state ול-sessionStorage.
       */
-      setAlbums([data, ...albums]);
+      setAlbums((prevAlbums) => {
+        const updatedAlbums = [data, ...prevAlbums];
+
+        sessionStorage.setItem(
+          albumsStorageKey,
+          JSON.stringify(updatedAlbums)
+        );
+
+        return updatedAlbums;
+      });
     } catch (err) {
       console.error("Add album error:", err);
       setError("Cannot connect to server");
@@ -121,9 +156,12 @@ function Albums() {
     try {
       setError("");
 
-      const response = await fetch(`${API_URL}/albums/${albumId}?userId=${userId}`, {
-        method: "DELETE"
-      });
+      const response = await fetch(
+        `${API_URL}/albums/${albumId}?userId=${userId}`,
+        {
+          method: "DELETE"
+        }
+      );
 
       const data = await response.json();
 
@@ -135,14 +173,24 @@ function Albums() {
       /*
         צמצום קריאות לשרת:
         לא מביאים שוב את כל האלבומים.
-        מסירים מה-state רק את האלבום שנמחק.
+        מסירים מה-state ומה-sessionStorage רק את האלבום שנמחק.
       */
-      setAlbums(
-        albums.filter((album) => {
+      setAlbums((prevAlbums) => {
+        const updatedAlbums = prevAlbums.filter((album) => {
           const currentId = album._id || album.id;
           return currentId !== albumId;
-        })
-      );
+        });
+
+        sessionStorage.setItem(
+          albumsStorageKey,
+          JSON.stringify(updatedAlbums)
+        );
+
+        return updatedAlbums;
+      });
+
+      // אם היו תמונות שמורות לאלבום הזה, מוחקים אותן גם מה-cache
+      sessionStorage.removeItem(`photos_${albumId}`);
     } catch (err) {
       console.error("Delete album error:", err);
       setError("Cannot connect to server");
@@ -202,9 +250,7 @@ function Albums() {
                       <span className="task-number">Album #{index + 1}</span>
                       <h3>{album.title}</h3>
 
-                      {album.description && (
-                        <p>{album.description}</p>
-                      )}
+                      {album.description && <p>{album.description}</p>}
 
                       {album.createdAt && (
                         <p className="question-date">
@@ -214,7 +260,10 @@ function Albums() {
                     </div>
 
                     <div className="question-actions">
-                      <Link to={`/albums/${albumId}/photos`} className="open-question-btn">
+                      <Link
+                        to={`/albums/${albumId}/photos`}
+                        className="open-question-btn"
+                      >
                         Open Photos
                       </Link>
 

@@ -5,7 +5,7 @@ import './styles/global.css';
 
 // נקודת הכניסה הראשית של React
 ReactDOM.createRoot(document.getElementById('root')).render(
-  //<React.StrictMode>
+  //<React.StrictMode>  // הסרנו את React.StrictMode כדי שלא יגרום ל-useEffect לרוץ פעמיים בזמן פיתוח
     <App />
   //</React.StrictMode>
 );

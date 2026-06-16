@@ -3,7 +3,14 @@ import { Link, useParams } from "react-router-dom";
 import API_URL from "../services/api";
 
 function Photos() {
+  // מקבלים מה-URL את ה-id של האלבום
   const { albumId } = useParams();
+
+  /*
+    מפתח ייחודי לשמירת התמונות של האלבום בדפדפן.
+    ככה אם חוזרים שוב למסך התמונות של אותו אלבום אין GET נוסף.
+  */
+  const photosStorageKey = `photos_${albumId}`;
 
   // המשתמש המחובר מתוך localStorage
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
@@ -28,8 +35,21 @@ function Photos() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // טעינת תמונות כאשר העמוד נפתח
+  /*
+    טעינת תמונות כאשר העמוד נפתח.
+
+    קודם בודקים אם התמונות כבר שמורות ב-sessionStorage.
+    אם כן — מציגים אותן בלי קריאה נוספת לשרת.
+    אם לא — קוראים לשרת פעם אחת ושומרים את התוצאה.
+  */
   useEffect(() => {
+    const savedPhotos = sessionStorage.getItem(photosStorageKey);
+
+    if (savedPhotos) {
+      setPhotos(JSON.parse(savedPhotos));
+      return;
+    }
+
     fetchPhotos();
   }, [albumId]);
 
@@ -51,7 +71,9 @@ function Photos() {
         return;
       }
 
+      // שומרים גם ב-state וגם ב-sessionStorage כדי למנוע קריאה חוזרת מיותרת
       setPhotos(data);
+      sessionStorage.setItem(photosStorageKey, JSON.stringify(data));
     } catch (err) {
       console.error("Fetch photos error:", err);
       setError("Cannot connect to server");
@@ -115,9 +137,18 @@ function Photos() {
       /*
         צמצום קריאות לשרת:
         אחרי יצירת תמונה לא עושים GET נוסף.
-        מוסיפים את התמונה החדשה ישירות ל-state.
+        מוסיפים את התמונה החדשה ישירות ל-state ול-sessionStorage.
       */
-      setPhotos([data, ...photos]);
+      setPhotos((prevPhotos) => {
+        const updatedPhotos = [data, ...prevPhotos];
+
+        sessionStorage.setItem(
+          photosStorageKey,
+          JSON.stringify(updatedPhotos)
+        );
+
+        return updatedPhotos;
+      });
     } catch (err) {
       console.error("Add photo error:", err);
       setError("Cannot connect to server");
@@ -129,9 +160,12 @@ function Photos() {
     try {
       setError("");
 
-      const response = await fetch(`${API_URL}/photos/${photoId}?userId=${userId}`, {
-        method: "DELETE"
-      });
+      const response = await fetch(
+        `${API_URL}/photos/${photoId}?userId=${userId}`,
+        {
+          method: "DELETE"
+        }
+      );
 
       const data = await response.json();
 
@@ -143,14 +177,21 @@ function Photos() {
       /*
         צמצום קריאות לשרת:
         לא שולפים שוב את כל התמונות.
-        מסירים מה-state רק את התמונה שנמחקה.
+        מסירים מה-state ומה-sessionStorage רק את התמונה שנמחקה.
       */
-      setPhotos(
-        photos.filter((photo) => {
+      setPhotos((prevPhotos) => {
+        const updatedPhotos = prevPhotos.filter((photo) => {
           const currentId = photo._id || photo.id;
           return currentId !== photoId;
-        })
-      );
+        });
+
+        sessionStorage.setItem(
+          photosStorageKey,
+          JSON.stringify(updatedPhotos)
+        );
+
+        return updatedPhotos;
+      });
     } catch (err) {
       console.error("Delete photo error:", err);
       setError("Cannot connect to server");
