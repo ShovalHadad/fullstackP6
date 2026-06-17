@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Post = require("../models/Post");
 const Comment = require("../models/Comment");
 
-const router = express.Router();
+const router = express.Router();  // יוצר router נפרד לקובץ הפוסטים
 
 /*
 GET /posts
@@ -32,7 +32,7 @@ router.get("/", async (req, res) => {
       fromDate,
       toDate,
       dateSort
-    } = req.query;
+    } = req.query;  // מקבל את פרמטרי הסינון מה-URL
 
     const filter = {};
 
@@ -102,7 +102,7 @@ GET /posts/:id
 */
 router.get("/:id", async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params;// מקבל את ה-id של הפוסט מה-URL
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -113,7 +113,7 @@ router.get("/:id", async (req, res) => {
     const post = await Post.findById(id).populate(
       "userId",
       "fullName username email department studyYear role isBlocked"
-    );
+    );  // מחזיר את הפוסט עם פרטי המשתמש שיצר אותו
 
     if (!post) {
       return res.status(404).json({
@@ -121,7 +121,7 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    res.json(post);
+    res.json(post); // מחזיר את הפוסט עם פרטי המשתמש שיצר אותו
   } catch (error) {
     console.error("Get post error:", error.message);
 
@@ -151,14 +151,14 @@ router.post("/", async (req, res) => {
       title,
       body,
       courseName
-    });
+    });// יוצר פוסט חדש במסד הנתונים
 
     const postWithUser = await Post.findById(newPost._id).populate(
       "userId",
       "fullName username email department studyYear role isBlocked"
-    );
+    );// מחזיר את הפוסט החדש עם פרטי המשתמש שיצר אותו
 
-    res.status(201).json(postWithUser);
+    res.status(201).json(postWithUser); // מחזיר את הפוסט החדש עם פרטי המשתמש שיצר אותו
   } catch (error) {
     console.error("Create post error:", error.message);
 
@@ -194,7 +194,7 @@ router.put("/:id", async (req, res) => {
     const post = await Post.findOne({
       _id: id,
       userId: userId
-    });
+    });// מחפש את הפוסט לפי id ובודק אם הוא שייך למשתמש שמבצע את הבקשה
 
     if (!post) {
       return res.status(404).json({
@@ -214,14 +214,14 @@ router.put("/:id", async (req, res) => {
       post.courseName = courseName;
     }
 
-    const updatedPost = await post.save();
+    const updatedPost = await post.save(); // שומר את השינויים במסד הנתונים
 
     const postWithUser = await Post.findById(updatedPost._id).populate(
       "userId",
       "fullName username email department studyYear role isBlocked"
     );
 
-    res.json(postWithUser);
+    res.json(postWithUser);// מחזיר את הפוסט המעודכן עם פרטי המשתמש שיצר אותו
   } catch (error) {
     console.error("Update post error:", error.message);
 

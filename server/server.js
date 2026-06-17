@@ -1,9 +1,9 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+const express = require("express");  // מאפשר ליצור שרת Express
+const cors = require("cors");  // מאפשר לשרת לקבל בקשות מ-React (או כל מקור אחר)
+require("dotenv").config();  //טוען משתנים מקובץ .env
 
-const connectDB = require("./config/db");
-
+const connectDB = require("./config/db");  // פונקציה שמתחברת ל-MongoDB  
+// חיבור כל קבצי ה-routes לשרת
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const todoRoutes = require("./routes/todoRoutes");
@@ -13,16 +13,16 @@ const adminRoutes = require("./routes/adminRoutes");
 const albumRoutes = require("./routes/albumRoutes");
 const photoRoutes = require("./routes/photoRoutes");
 
-const app = express();
+const app = express();  // יצירת שרת Express ז"א יוצר אפליקציית Express
 
 // התחברות לבסיס הנתונים MongoDB
 connectDB();
 
 // מאפשר ל-React לשלוח בקשות לשרת
-app.use(cors());
+app.use(cors()); //שליחת בקשות לשרת
 
 // מאפשר לשרת לקבל JSON מהבקשות
-app.use(express.json());
+app.use(express.json());  // קבלת מידע מהשרת
 
 // חיבור כל קבצי ה-routes לשרת
 app.use("/auth", authRoutes);

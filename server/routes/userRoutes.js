@@ -1,10 +1,10 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt"); 
 
 const User = require("../models/User");
 const UserPassword = require("../models/UserPassword");
 
-const router = express.Router();
+const router = express.Router(); // יוצר router נפרד לקובץ המשתמשים
 //GET /users/:id
 // מחזיר פרטי משתמש לפי id
 router.get("/:id", async (req, res) => {
@@ -63,7 +63,7 @@ router.put("/:id", async (req, res) => {
       email,
       department,
       studyYear
-    } = req.body;
+    } = req.body; // מקבל את הנתונים מהבקשה
 
     // חיפוש המשתמש לפי id
     const user = await User.findById(id);

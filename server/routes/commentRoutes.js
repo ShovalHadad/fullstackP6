@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Comment = require("../models/Comment");
 const Post = require("../models/Post");
 
-const router = express.Router();
+const router = express.Router(); // יוצר router נפרד לקובץ התגובות
 
 /*
 GET /comments?postId=...

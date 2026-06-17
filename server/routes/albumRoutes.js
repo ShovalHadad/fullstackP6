@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Album = require("../models/Album");
 const Photo = require("../models/Photo");
 
-const router = express.Router();
+const router = express.Router();// יוצר router נפרד לקובץ האלבומים
 
 /*
 GET /albums?userId=...
@@ -13,7 +13,7 @@ GET /albums?userId=...
 */
 router.get("/", async (req, res) => {
   try {
-    const { userId } = req.query;
+    const { userId } = req.query; // מקבל את ה-userId מה-URL
 
     if (!userId) {
       return res.status(400).json({
@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
       createdAt: -1
     });
 
-    res.json(albums);
+    res.json(albums); // מחזיר את האלבומים של המשתמש
   } catch (error) {
     console.error("Get albums error:", error.message);
 
@@ -42,7 +42,7 @@ POST /albums
 */
 router.post("/", async (req, res) => {
   try {
-    const { userId, title, description } = req.body;
+    const { userId, title, description } = req.body; // מקבל את הנתונים מהבקשה
 
     if (!userId || !title) {
       return res.status(400).json({
@@ -74,8 +74,8 @@ DELETE /albums/:id?userId=...
 */
 router.delete("/:id", async (req, res) => {
   try {
-    const { id } = req.params;
-    const { userId } = req.query;
+    const { id } = req.params; // מקבל את ה-id של האלבום מה-URL
+    const { userId } = req.query;  // מקבל את ה-userId מה-URL
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({

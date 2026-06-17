@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Photo = require("../models/Photo");
 const Album = require("../models/Album");
 
-const router = express.Router();
+const router = express.Router(); //יוצר router נפרד לקובץ התמונות
 
 /*
 GET /photos?albumId=...
@@ -13,19 +13,19 @@ GET /photos?albumId=...
 */
 router.get("/", async (req, res) => {
   try {
-    const { albumId } = req.query;
+    const { albumId } = req.query; // מקבל את ה-albumId מה-URL
 
-    if (!albumId) {
+    if (!albumId) { //מוודא שה-albumId תקין 
       return res.status(400).json({
         message: "albumId is required"
       });
     }
-
+    
     const photos = await Photo.find({ albumId }).sort({
       createdAt: -1
     });
 
-    res.json(photos);
+    res.json(photos);  // מחזיר את התמונות של האלבום
   } catch (error) {
     console.error("Get photos error:", error.message);
 
@@ -88,7 +88,7 @@ router.delete("/:id", async (req, res) => {
     const { id } = req.params;
     const { userId } = req.query;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {//בודק שה־id תקין מבחינת MongoDB
       return res.status(400).json({
         message: "Invalid photo id"
       });

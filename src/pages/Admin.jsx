@@ -24,15 +24,6 @@ function Admin() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // מפתח ייחודי לשמירת המשתמשים לפי admin והסינונים הנוכחיים
-  const getUsersStorageKey = () =>
-    `admin_users_${currentUser?._id}_${filters.search}_${filters.department}_${filters.isBlocked}_${filters.role}`;
-
-  // שמירת רשימת המשתמשים ב-sessionStorage כדי למנוע GET מיותר בחזרה למסך
-  const saveUsersToCache = (updatedUsers) => {
-    sessionStorage.setItem(getUsersStorageKey(), JSON.stringify(updatedUsers));
-  };
-
   // בדיקה שהמשתמש מחובר והוא מנהל
   useEffect(() => {
     if (!currentUser) {
@@ -42,13 +33,6 @@ function Admin() {
 
     if (currentUser.role !== "admin") {
       navigate("/home");
-      return;
-    }
-
-    const savedUsers = sessionStorage.getItem(getUsersStorageKey());
-
-    if (savedUsers) {
-      setUsers(JSON.parse(savedUsers));
       return;
     }
 
@@ -95,7 +79,6 @@ function Admin() {
       }
 
       setUsers(data);
-      saveUsersToCache(data);
     } catch (err) {
       console.error("Fetch users error:", err);
       setError("Cannot connect to server");
@@ -159,20 +142,21 @@ function Admin() {
         לא עושים GET מחדש לכל המשתמשים.
         מעדכנים רק את המשתמש שהשתנה בתוך ה-state.
       */
-      setUsers((prevUsers) => {
-        const updatedUsers = prevUsers.map((item) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((item) => {
           if (item._id === data._id) {
             return data;
           }
 
           return item;
-        });
+        })
+      );
 
-        saveUsersToCache(updatedUsers);
-        return updatedUsers;
-      });
-
-      setMessage(data.isBlocked ? "User blocked successfully" : "User unblocked successfully");
+      setMessage(
+        data.isBlocked
+          ? "User blocked successfully"
+          : "User unblocked successfully"
+      );
     } catch (err) {
       console.error("Block user error:", err);
       setError("Cannot connect to server");
@@ -208,18 +192,15 @@ function Admin() {
         לא שולפים שוב את כל המשתמשים.
         מחליפים רק את המשתמש שהתפקיד שלו השתנה.
       */
-      setUsers((prevUsers) => {
-        const updatedUsers = prevUsers.map((item) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((item) => {
           if (item._id === data._id) {
             return data;
           }
 
           return item;
-        });
-
-        saveUsersToCache(updatedUsers);
-        return updatedUsers;
-      });
+        })
+      );
 
       setMessage("User role updated successfully");
     } catch (err) {
@@ -249,49 +230,69 @@ function Admin() {
         {error && <p className="error-message">{error}</p>}
         {message && <p className="success-message">{message}</p>}
 
-        {/* טופס סינון למנהל */}
-        <form className="question-form" onSubmit={handleFilterSubmit}>
-          <input
-            type="text"
-            name="search"
-            placeholder="Search by name, username or email"
-            value={filters.search}
-            onChange={handleFilterChange}
-          />
+        {/* אזור סינון מעוצב למנהל */}
+        <form className="admin-filter-box" onSubmit={handleFilterSubmit}>
+          <div className="admin-filter-field admin-filter-wide">
+            <label>Search</label>
+            <input
+              type="text"
+              name="search"
+              placeholder="Search by name, username or email"
+              value={filters.search}
+              onChange={handleFilterChange}
+            />
+          </div>
 
-          <input
-            type="text"
-            name="department"
-            placeholder="Department"
-            value={filters.department}
-            onChange={handleFilterChange}
-          />
+          <div className="admin-filter-field">
+            <label>Department</label>
+            <input
+              type="text"
+              name="department"
+              placeholder="Department"
+              value={filters.department}
+              onChange={handleFilterChange}
+            />
+          </div>
 
-          <select
-            name="isBlocked"
-            value={filters.isBlocked}
-            onChange={handleFilterChange}
-          >
-            <option value="">All statuses</option>
-            <option value="false">Active</option>
-            <option value="true">Blocked</option>
-          </select>
+          <div className="admin-filter-field">
+            <label>Status</label>
+            <select
+              name="isBlocked"
+              value={filters.isBlocked}
+              onChange={handleFilterChange}
+            >
+              <option value="">All statuses</option>
+              <option value="false">Active</option>
+              <option value="true">Blocked</option>
+            </select>
+          </div>
 
-          <select
-            name="role"
-            value={filters.role}
-            onChange={handleFilterChange}
-          >
-            <option value="">All roles</option>
-            <option value="student">Students</option>
-            <option value="admin">Admins</option>
-          </select>
+          <div className="admin-filter-field">
+            <label>Role</label>
+            <select
+              name="role"
+              value={filters.role}
+              onChange={handleFilterChange}
+            >
+              <option value="">All roles</option>
+              <option value="student">Students</option>
+              <option value="admin">Admins</option>
+            </select>
+          </div>
 
-          <button type="submit">Filter Users</button>
+          <div className="admin-filter-buttons">
+            <button type="submit" className="admin-filter-btn">
+              Filter Users
+            </button>
 
-          <button type="button" onClick={clearFilters}>
-            Clear
-          </button>
+            <button
+              type="button"
+              className="admin-clear-btn"
+              onClick={clearFilters}
+            >
+              Clear
+            </button>
+          </div>
         </form>
 
         {loading ? (

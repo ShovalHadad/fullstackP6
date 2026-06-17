@@ -1235,3 +1235,138 @@ body {
     width: 100%;
   }
 }
+
+/* =========================
+   Admin Filters
+   ========================= */
+
+.admin-filter-box {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr auto;
+  gap: 14px;
+  align-items: end;
+  margin: 22px 0 28px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(140, 160, 255, 0.25);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+.admin-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.admin-filter-field label {
+  color: #d6dcff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.admin-filter-field input,
+.admin-filter-field select {
+  height: 44px;
+  padding: 0 13px;
+  border: 1px solid rgba(160, 175, 255, 0.35);
+  border-radius: 12px;
+  background: rgba(8, 18, 70, 0.85);
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.admin-filter-field input::placeholder {
+  color: #aeb8e8;
+}
+
+.admin-filter-field input:focus,
+.admin-filter-field select:focus {
+  border-color: #6f7cff;
+  box-shadow: 0 0 0 3px rgba(111, 124, 255, 0.22);
+}
+
+.admin-filter-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-filter-btn {
+  height: 44px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #4f6bff, #7b5cff);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.admin-clear-btn {
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid rgba(160, 175, 255, 0.35);
+  border-radius: 12px;
+  background: transparent;
+  color: #dbe2ff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.admin-filter-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(79, 107, 255, 0.35);
+}
+
+.admin-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* התאמה למסכים בינוניים */
+@media (max-width: 1000px) {
+  .admin-filter-box {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-filter-wide {
+    grid-column: span 2;
+  }
+
+  .admin-filter-buttons {
+    grid-column: span 2;
+  }
+}
+
+/* התאמה למסכים קטנים */
+@media (max-width: 600px) {
+  .admin-filter-box {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-filter-wide,
+  .admin-filter-buttons {
+    grid-column: span 1;
+  }
+
+  .admin-filter-buttons {
+    flex-direction: column;
+  }
+
+  .admin-filter-btn,
+  .admin-clear-btn {
+    width: 100%;
+  }
+}
+
+.admin-filter-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 24px;
+  margin: 20px 0 30px;
+}
